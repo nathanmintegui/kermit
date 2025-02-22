@@ -8,7 +8,7 @@ namespace Kermit.Controllers;
 
 [ApiController]
 [Route("v1/calendarios")]
-public class CalendarioController : Controller
+public class CalendarioController : ControllerBase
 {
     [HttpGet]
     public IActionResult Get()
