@@ -140,7 +140,7 @@ public class CalendarioController : ControllerBase
     {
         HashSet<DiaCalendario> dates = [];
 
-        for (DateTime date = new(year, month, 1); date.Month == month; date = date.AddDays(1))
+        for (DateTime date = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc); date.Month == month; date = date.AddDays(1))
         {
             DiaCalendario obj = new() { Data = date.ToString("dd/MM/yyyy") };
 
