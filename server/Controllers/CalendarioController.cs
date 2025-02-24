@@ -11,8 +11,12 @@ namespace Kermit.Controllers;
 public class CalendarioController : ControllerBase
 {
     [HttpGet]
-    public IActionResult Get()
+    public IActionResult Get([FromQuery] int? trilha)
     {
+        /* NOTE: if query param is informed then proceed to fetch from the database,
+         * otherwise, the default value should be the general calendar identifier.
+         */
+
         string[] competenciasCalendarioGeral = ["02/2025", "03/2025", "04/2025"];
 
         List<Competencia> competencias = new(competenciasCalendarioGeral.Length);
@@ -140,7 +144,9 @@ public class CalendarioController : ControllerBase
     {
         HashSet<DiaCalendario> dates = [];
 
-        for (DateTime date = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc); date.Month == month; date = date.AddDays(1))
+        for (DateTime date = new(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+             date.Month == month;
+             date = date.AddDays(1))
         {
             DiaCalendario obj = new() { Data = date.ToString("dd/MM/yyyy") };
 
