@@ -9,4 +9,5 @@ public interface ITrilhaRepository
     /// </summary>
     /// <returns>Uma lista de objetos <see cref="Trilha"/>. Retorna uma lista vazia caso nenhuma trilha seja encontrada.</returns>
     Task<List<Trilha>> FindAllAsync();
+    
 }

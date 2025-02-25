@@ -13,9 +13,9 @@ public sealed class Trilha
         Nome = nome;
     }
 
-    public static Trilha Create(NomeTrilha nome)
+    public static Trilha Create(NonEmptyString nome)
     {
-        Trilha trilha = new(TrilhaId.Empty, nome);
+        Trilha trilha = new(TrilhaId.Empty, new NomeTrilha(nome));
 
         return trilha;
     }

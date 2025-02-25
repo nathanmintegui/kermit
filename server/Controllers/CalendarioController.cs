@@ -1,5 +1,5 @@
+using Kermit.dto.calendario;
 using Kermit.Models;
-
 using Kermit.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
@@ -72,6 +72,59 @@ public class CalendarioController : ControllerBase
         var response = new { trilhas, edicoes };
 
         return Ok(response);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] CriarCalendarioRequest request)
+    {
+        const int numeroMinimoTrilhas = 1;
+
+        if (request.edicao == string.Empty)
+        {
+            return BadRequest("Número da edição não pode ser vazio.");
+        }
+
+        if (request.trilhas.Count < numeroMinimoTrilhas)
+        {
+            return BadRequest("Lista de trilhas a serem cadastradas não deve ser vazia.");
+        }
+
+        /*
+         * Edição: (nova) - insert
+         * Trilhas: (nova ou antiga) - insert
+         * Competência por trilhas (nova) - insert
+         */
+
+        Task<List<Trilha>> trilhasTask = _trilhaRepository.FindAllAsync();
+        Task<List<Edicao>> edicoesTask = _edicaoRepository.FindAllAsync();
+
+        await Task.WhenAll(trilhasTask, edicoesTask);
+
+        List<Trilha> trilhas = await trilhasTask;
+        List<Edicao> edicoes = await edicoesTask;
+
+        Edicao edicao = Edicao.Create(new NonEmptyString(request.edicao), true, edicoes);
+
+        List<string> listaTrilhasCadastradas = trilhas
+            .Select(t => t.Nome.Value.Trim().ToUpper())
+            .ToList();
+
+        List<string> nomesTrilhasASeremCadastradas = trilhas.Count > 0
+            ? request.trilhas.Select(t => t.valor).AsEnumerable()
+                .Where(t => !listaTrilhasCadastradas.Contains(t.Trim().ToUpper()))
+                .ToList()
+            : request.trilhas.Select(t => t.valor).ToList();
+
+        List<Trilha> trilhasASeremCadastradas = nomesTrilhasASeremCadastradas
+            .Select(t => Trilha.Create(new NonEmptyString(t)))
+            .ToList();
+
+        /* unit of work, transaction scope */
+        await _edicaoRepository.InsertAsync(edicao);
+
+        /* salvar todas as trilhas */
+
+        return NoContent();
     }
 
     private static List<DiaCalendario> fillDaysBefore(int year, int month)

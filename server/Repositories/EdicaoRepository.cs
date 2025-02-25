@@ -39,4 +39,9 @@ public class EdicaoRepository : IEdicaoRepository
 
         return [];
     }
+
+    public Task<int> InsertAsync(Edicao edicao)
+    {
+        throw new NotImplementedException();
+    }
 }
