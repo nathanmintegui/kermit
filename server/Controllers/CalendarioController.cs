@@ -1,4 +1,6 @@
 using Kermit.dto.calendario;
+using Kermit.Dto.Edicao;
+using Kermit.Dto.Trillha;
 using Kermit.Models;
 using Kermit.Repositories;
 
@@ -69,7 +71,11 @@ public class CalendarioController : ControllerBase
         List<Trilha> trilhas = await trilhasTask;
         List<Edicao> edicoes = await edicoesTask;
 
-        var response = new { trilhas, edicoes };
+        var response = new
+        {
+            Trilhas = trilhas.Select(t => new TrilhaResponse(t.Id.Valor, t.Nome.Value)),
+            Edicoes = edicoes.Select(e => new EdicaoResponse(e.Id.Valor, e.Nome.Value))
+        };
 
         return Ok(response);
     }
