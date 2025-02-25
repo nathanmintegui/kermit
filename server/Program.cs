@@ -21,6 +21,8 @@ builder.Services.AddScoped<IEdicaoRepository, EdicaoRepository>();
 
 SqlMapper.AddTypeHandler(new TrilhaIdTypeHandler());
 SqlMapper.AddTypeHandler(new NomeTrilhaTypeHandler());
+SqlMapper.AddTypeHandler(new EdicaoIdTypeHandler());
+SqlMapper.AddTypeHandler(new NomeEdicaoTypeHandler());
 
 WebApplication app = builder.Build();
 
