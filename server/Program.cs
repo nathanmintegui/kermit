@@ -1,4 +1,8 @@
+using Dapper;
+
 using Kermit.Database;
+using Kermit.Repositories;
+using Kermit.Repositories.CustomHandlers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +15,12 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSingleton<IDbConnectionFactory>(_ =>
     new NpgsqlDbConnectionFactory(builder.Configuration["DbConnectionString"]!));
+
+builder.Services.AddScoped<ITrilhaRepository, TrilhaRepository>();
+builder.Services.AddScoped<IEdicaoRepository, EdicaoRepository>();
+
+SqlMapper.AddTypeHandler(new TrilhaIdTypeHandler());
+SqlMapper.AddTypeHandler(new NomeTrilhaTypeHandler());
 
 WebApplication app = builder.Build();
 

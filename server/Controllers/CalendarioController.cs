@@ -1,5 +1,7 @@
 using Kermit.Models;
 
+using Kermit.Repositories;
+
 using Microsoft.AspNetCore.Mvc;
 
 using static System.Convert;
@@ -10,6 +12,15 @@ namespace Kermit.Controllers;
 [Route("v1/calendarios")]
 public class CalendarioController : ControllerBase
 {
+    private readonly ITrilhaRepository _trilhaRepository;
+    private readonly IEdicaoRepository _edicaoRepository;
+
+    public CalendarioController(ITrilhaRepository trilhaRepository, IEdicaoRepository edicaoRepository)
+    {
+        _trilhaRepository = trilhaRepository;
+        _edicaoRepository = edicaoRepository;
+    }
+
     [HttpGet]
     public IActionResult Get([FromQuery] int? trilha)
     {
@@ -42,6 +53,23 @@ public class CalendarioController : ControllerBase
         Legenda legenda = new() { ItemsLegenda = [] };
 
         CalendarioResponse response = new() { Competencias = competencias, Legenda = legenda };
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [Route("info-cadastro")]
+    public async Task<IActionResult> GetInfoCadastro()
+    {
+        Task<List<Trilha>> trilhasTask = _trilhaRepository.FindAllAsync();
+        Task<List<Edicao>> edicoesTask = _edicaoRepository.FindAllAsync();
+
+        await Task.WhenAll(trilhasTask, edicoesTask);
+
+        List<Trilha> trilhas = await trilhasTask;
+        List<Edicao> edicoes = await edicoesTask;
+
+        var response = new { trilhas, edicoes };
 
         return Ok(response);
     }
