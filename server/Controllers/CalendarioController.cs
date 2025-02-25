@@ -1,3 +1,4 @@
+using Kermit.Database;
 using Kermit.dto.calendario;
 using Kermit.Dto.Edicao;
 using Kermit.Dto.Trillha;
@@ -14,15 +15,6 @@ namespace Kermit.Controllers;
 [Route("v1/calendarios")]
 public class CalendarioController : ControllerBase
 {
-    private readonly ITrilhaRepository _trilhaRepository;
-    private readonly IEdicaoRepository _edicaoRepository;
-
-    public CalendarioController(ITrilhaRepository trilhaRepository, IEdicaoRepository edicaoRepository)
-    {
-        _trilhaRepository = trilhaRepository;
-        _edicaoRepository = edicaoRepository;
-    }
-
     [HttpGet]
     public IActionResult Get([FromQuery] int? trilha)
     {
@@ -61,10 +53,12 @@ public class CalendarioController : ControllerBase
 
     [HttpGet]
     [Route("info-cadastro")]
-    public async Task<IActionResult> GetInfoCadastro()
+    public async Task<IActionResult> GetInfoCadastro(
+        [FromServices] ITrilhaRepository trilhaRepository,
+        [FromServices] IEdicaoRepository edicaoRepository)
     {
-        Task<List<Trilha>> trilhasTask = _trilhaRepository.FindAllAsync();
-        Task<List<Edicao>> edicoesTask = _edicaoRepository.FindAllAsync();
+        Task<List<Trilha>> trilhasTask = trilhaRepository.FindAllAsync();
+        Task<List<Edicao>> edicoesTask = edicaoRepository.FindAllAsync();
 
         await Task.WhenAll(trilhasTask, edicoesTask);
 
@@ -81,7 +75,11 @@ public class CalendarioController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] CriarCalendarioRequest request)
+    public async Task<IActionResult> Post(
+        [FromBody] CriarCalendarioRequest request,
+        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] ITrilhaRepository trilhaRepository,
+        [FromServices] IEdicaoRepository edicaoRepository)
     {
         const int numeroMinimoTrilhas = 1;
 
@@ -101,8 +99,8 @@ public class CalendarioController : ControllerBase
          * Competência por trilhas (nova) - insert
          */
 
-        Task<List<Trilha>> trilhasTask = _trilhaRepository.FindAllAsync();
-        Task<List<Edicao>> edicoesTask = _edicaoRepository.FindAllAsync();
+        Task<List<Trilha>> trilhasTask = trilhaRepository.FindAllAsync();
+        Task<List<Edicao>> edicoesTask = edicaoRepository.FindAllAsync();
 
         await Task.WhenAll(trilhasTask, edicoesTask);
 
@@ -125,10 +123,24 @@ public class CalendarioController : ControllerBase
             .Select(t => Trilha.Create(new NonEmptyString(t)))
             .ToList();
 
-        /* unit of work, transaction scope */
-        await _edicaoRepository.InsertAsync(edicao);
+        /*
+         * NOTE: estudar o melhor fluxo para utilizar estes métodos, se o finally é realmente necessário
+         */
+        unitOfWork.BeginTransaction();
+        try
+        {
+            await edicaoRepository.InsertAsync(edicao);
 
-        /* salvar todas as trilhas */
+            unitOfWork.Commit();
+        }
+        catch (Exception e)
+        {
+            unitOfWork.Rollback();
+        }
+        finally
+        {
+            unitOfWork.Dispose();
+        }
 
         return NoContent();
     }

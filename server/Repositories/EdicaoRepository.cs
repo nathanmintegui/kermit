@@ -1,5 +1,3 @@
-using System.Data;
-
 using Dapper;
 
 using Kermit.Database;
@@ -11,24 +9,23 @@ namespace Kermit.Repositories;
 
 public class EdicaoRepository : IEdicaoRepository
 {
-    private readonly IDbConnectionFactory _dbConnectionFactory;
+    private readonly DbSession _session;
     private readonly ILogger<EdicaoRepository> _logger;
 
-    public EdicaoRepository(IDbConnectionFactory dbConnectionFactory, ILogger<EdicaoRepository> logger)
+    public EdicaoRepository(ILogger<EdicaoRepository> logger, DbSession session)
     {
-        _dbConnectionFactory = dbConnectionFactory;
+        _session = session;
         _logger = logger;
     }
 
     public async Task<List<Edicao>> FindAllAsync()
     {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();
-
         try
         {
             string query = @"select id, nome, em_andamento from edicoes;";
 
-            IEnumerable<Edicao> edicoes = await connection.QueryAsync<Edicao>(query);
+            IEnumerable<Edicao> edicoes =
+                await _session.Connection.QueryAsync<Edicao>(query, null, _session.Transaction);
 
             return edicoes.ToList();
         }

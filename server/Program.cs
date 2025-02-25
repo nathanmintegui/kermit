@@ -13,11 +13,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSingleton<IDbConnectionFactory>(_ =>
-    new NpgsqlDbConnectionFactory(builder.Configuration["DbConnectionString"]!));
-
-builder.Services.AddScoped<ITrilhaRepository, TrilhaRepository>();
-builder.Services.AddScoped<IEdicaoRepository, EdicaoRepository>();
+builder.Services.AddScoped<DbSession>(_ =>
+    new DbSession(builder.Configuration["DbConnectionString"]!));
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+builder.Services.AddTransient<ITrilhaRepository, TrilhaRepository>();
+builder.Services.AddTransient<IEdicaoRepository, EdicaoRepository>();
 
 SqlMapper.AddTypeHandler(new TrilhaIdTypeHandler());
 SqlMapper.AddTypeHandler(new NomeTrilhaTypeHandler());
