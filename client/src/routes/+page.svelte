@@ -1,51 +1,51 @@
 <script lang="ts">
-    import type { PageProps } from './$types';
+	import type { PageProps } from './$types';
 
-    let { data }: PageProps = $props();
+	let { data }: PageProps = $props();
 
-    let competencias = data?.data?.competencias;
+	let competencias = data?.data?.competencias;
 
-    const formatDate = (date) => date.split("/")[0];
+	const formatDate = (date: string) => date.split('/')[0];
 </script>
 
 <div class="text-center">
-     <h1 class="display-4">Calendário Geral</h1>
+	<h1 class="display-4">Calendário Geral</h1>
 
-    <div class="calendar-container">
-        {#each competencias as competencia}
-            <div class="b-0">
-                <div class="calendar">
-                    <div class="month-indicator">{competencia?.mes}</div>
-                    <div class="day-of-week">
-                        <div>Dom</div>
-                        <div>Seg</div>
-                        <div>Ter</div>
-                        <div>Qua</div>
-                        <div>Qui</div>
-                        <div>Sex</div>
-                        <div>Sáb</div>
-                    </div>
-                    <div class="date-grid">
-                        {#each competencia?.dias as dia}
-                            {#if dia?.data == ""}
-                                <button>
-                                    <span>&nbsp</span>
-                                </button>
-                            {:else}
-                                <button>
-                                    <time datetime="{dia?.data}">{formatDate(dia?.data)}</time>
-                                </button>
-                            {/if}
-                        {/each}
-                    </div>
-                </div>
-            </div>
-        {/each}
-    </div>
+	<div class="calendar-container">
+		{#each competencias as competencia}
+			<div class="b-0">
+				<div class="calendar">
+					<div class="month-indicator">{competencia?.mes}</div>
+					<div class="day-of-week">
+						<div>Dom</div>
+						<div>Seg</div>
+						<div>Ter</div>
+						<div>Qua</div>
+						<div>Qui</div>
+						<div>Sex</div>
+						<div>Sáb</div>
+					</div>
+					<div class="date-grid">
+						{#each competencia?.dias as dia}
+							{#if dia?.data == ""}
+								<button>
+									<span>&nbsp</span>
+								</button>
+							{:else}
+								<button>
+									<time datetime="{dia?.data}">{formatDate(dia?.data)}</time>
+								</button>
+							{/if}
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>
-* {
+    * {
         cursor: default;
     }
 
