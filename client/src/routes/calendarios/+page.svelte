@@ -1,15 +1,62 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 
+	const MODO = {
+		VISUALIZACAO: {
+			valor: 'VISUALIZACAO',
+			estilo: ''
+		},
+		EDICAO: {
+			valor: 'EDICAO',
+			estilo: 'border-7 border-orange-500'
+		}
+	};
+
 	let { data }: PageProps = $props();
+
+	let mode = $state(MODO.VISUALIZACAO.valor);
+	let listaDiasSelecionadosEdicao: string[] = $state([]);
 
 	let competencias = data?.data?.competencias;
 
 	const formatDate = (date: string) => date.split('/')[0];
+
+	/*
+	* TODO: Autenticar usuário e pegar a role.
+	* */
+	const isAdmin = true;
+
+	const handleClickEditarModoEdicao = () => {
+		mode = mode === MODO.EDICAO.valor
+			? MODO.VISUALIZACAO.valor
+			: MODO.EDICAO.valor;
+	};
+
+	const handleClickDiaCalendario = (data: string): void => {
+		const id = data;
+
+		if (!id) {
+			alert('Could not get Element Id');
+			return;
+		}
+
+		const idx = listaDiasSelecionadosEdicao.findIndex(d => d === id);
+		if (idx === -1) {
+			listaDiasSelecionadosEdicao.push(id);
+			return;
+		}
+
+		listaDiasSelecionadosEdicao = listaDiasSelecionadosEdicao.filter(d => d !== id);
+	};
 </script>
 
-<div class="text-center">
+<div class="prevent-select text-center min-h-[100%] {mode === MODO.EDICAO.valor && MODO.EDICAO.estilo}">
 	<h1 class="display-4">Calendário Geral</h1>
+	<p>MODO - <strong> {mode} </strong></p>
+
+	{#if isAdmin}
+		<button onclick={handleClickEditarModoEdicao}>Editar</button>
+	{/if}
 
 	<div class="calendar-container">
 		{#each competencias as competencia}
@@ -28,11 +75,17 @@
 					<div class="date-grid">
 						{#each competencia?.dias as dia}
 							{#if dia?.data == ""}
-								<button>
+								<button class="border border-[#ddd]" aria-label="espaço em branco">
 									<span>&nbsp</span>
 								</button>
 							{:else}
-								<button>
+								<button id={dia?.data}
+												class=" border-[#ddd]
+												{listaDiasSelecionadosEdicao.find(x => x === dia?.data) !== undefined ?
+												 'border border-red-400'
+												  : 'border'}"
+												onclick={() => handleClickDiaCalendario(dia?.data)}
+								>
 									<time datetime="{dia?.data}">{formatDate(dia?.data)}</time>
 								</button>
 							{/if}
@@ -97,7 +150,6 @@
         padding: 10px;
         text-align: center;
         background-color: #ffffff;
-        border: 1px solid #ddd;
         border-radius: 4px;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -120,4 +172,3 @@
         visibility: hidden;
     }
 </style>
-

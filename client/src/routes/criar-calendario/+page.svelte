@@ -125,10 +125,4 @@
     .custom-radio input:checked + .radio-btn {
         border: 2px solid #4CAF50;
     }
-
-    .prevent-select {
-        -webkit-user-select: none; /* Safari */
-        -ms-user-select: none; /* IE 10 and IE 11 */
-        user-select: none; /* Standard syntax */
-    }
 </style>
