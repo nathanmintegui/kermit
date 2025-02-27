@@ -37,8 +37,12 @@ public class EdicaoRepository : IEdicaoRepository
         return [];
     }
 
-    public Task<int> InsertAsync(Edicao edicao)
+    public async Task InsertAsync(Edicao edicao)
     {
-        throw new NotImplementedException();
+        const string query = @"insert into edicoes(nome, em_andamento) values (@Nome, @EmAndamento) returning id;";
+
+        int id = await _session.Connection.ExecuteScalarAsync<int>(query, edicao, _session.Transaction);
+
+        edicao.Id = EdicaoId.Create(id);
     }
 }

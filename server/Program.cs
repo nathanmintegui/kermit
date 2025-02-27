@@ -18,11 +18,13 @@ builder.Services.AddScoped<DbSession>(_ =>
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ITrilhaRepository, TrilhaRepository>();
 builder.Services.AddTransient<IEdicaoRepository, EdicaoRepository>();
+builder.Services.AddTransient<ICalendarioRepository, CalendarioRepository>();
 
 SqlMapper.AddTypeHandler(new TrilhaIdTypeHandler());
 SqlMapper.AddTypeHandler(new NomeTrilhaTypeHandler());
 SqlMapper.AddTypeHandler(new EdicaoIdTypeHandler());
 SqlMapper.AddTypeHandler(new NomeEdicaoTypeHandler());
+SqlMapper.AddTypeHandler(new CalendarioIdTypeHandler());
 
 WebApplication app = builder.Build();
 

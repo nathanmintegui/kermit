@@ -2,10 +2,9 @@ namespace Kermit.Models;
 
 public sealed class Trilha
 {
-    public TrilhaId Id { get; private set; }
-    public NomeTrilha Nome { get; private set; }
-
+#pragma warning disable CS8618, CS9264
     private Trilha() { }
+#pragma warning restore CS8618, CS9264
 
     private Trilha(TrilhaId id, NomeTrilha nome)
     {
@@ -41,6 +40,9 @@ public sealed class Trilha
             _ => trilhas.Exists(t => t.Nome == Nome)
         };
     }
+
+    public TrilhaId Id { get; internal set; }
+    public NomeTrilha Nome { get; private set; }
 }
 
 public record struct TrilhaId(int Valor)

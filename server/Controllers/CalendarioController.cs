@@ -7,6 +7,8 @@ using Kermit.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Npgsql;
+
 using static System.Convert;
 
 namespace Kermit.Controllers;
@@ -79,7 +81,8 @@ public class CalendarioController : ControllerBase
         [FromBody] CriarCalendarioRequest request,
         [FromServices] IUnitOfWork unitOfWork,
         [FromServices] ITrilhaRepository trilhaRepository,
-        [FromServices] IEdicaoRepository edicaoRepository)
+        [FromServices] IEdicaoRepository edicaoRepository,
+        [FromServices] ICalendarioRepository calendarioRepository)
     {
         const int numeroMinimoTrilhas = 1;
 
@@ -92,12 +95,6 @@ public class CalendarioController : ControllerBase
         {
             return BadRequest("Lista de trilhas a serem cadastradas não deve ser vazia.");
         }
-
-        /*
-         * Edição: (nova) - insert
-         * Trilhas: (nova ou antiga) - insert
-         * Competência por trilhas (nova) - insert
-         */
 
         Task<List<Trilha>> trilhasTask = trilhaRepository.FindAllAsync();
         Task<List<Edicao>> edicoesTask = edicaoRepository.FindAllAsync();
@@ -131,9 +128,39 @@ public class CalendarioController : ControllerBase
         {
             await edicaoRepository.InsertAsync(edicao);
 
+            if (trilhasASeremCadastradas.Count != 0)
+            {
+                await trilhaRepository.AddAsync(trilhasASeremCadastradas);
+            }
+
+            /*
+             * TODO: validar se já existe um calendário com a mesma edição ou se já existe um calendário ativo,
+             * nesse caso setar o ativo para false.
+             */
+            Calendario calendario = Calendario.Create(edicao);
+            await calendarioRepository.SaveAsync(calendario);
+
+            trilhas.AddRange(trilhasASeremCadastradas);
+
+            List<TrilhaCompetencia> trilhaCompetencias = [];
+            foreach (TrilhaCompetenciaRequest tcr in request.trilhas)
+            {
+                Trilha trilha = trilhas.Find(t =>
+                                    t.Nome.Value.Trim().Equals(tcr.valor.Trim(),
+                                        StringComparison.CurrentCultureIgnoreCase)) ??
+                                Trilha.Create(new NonEmptyString(tcr.valor));
+
+                tcr.competencias.ForEach(c =>
+                {
+                    trilhaCompetencias.Add(TrilhaCompetencia.Create(new AnoMes(c.ano, c.mes), trilha, calendario));
+                });
+            }
+
+            await calendarioRepository.SalvarTrilhasCompetenciasAsync(trilhaCompetencias);
+
             unitOfWork.Commit();
         }
-        catch (Exception e)
+        catch (NpgsqlException)
         {
             unitOfWork.Rollback();
         }

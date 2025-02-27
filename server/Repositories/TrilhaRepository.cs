@@ -22,7 +22,7 @@ public class TrilhaRepository : ITrilhaRepository
     {
         try
         {
-            string query = @"select id, nome from trilhas;";
+            const string query = @"select id, nome from trilhas;";
 
             IEnumerable<Trilha> trilhas =
                 await _session.Connection.QueryAsync<Trilha>(query, null, _session.Transaction);
@@ -35,5 +35,18 @@ public class TrilhaRepository : ITrilhaRepository
         }
 
         return [];
+    }
+
+    public async Task AddAsync(List<Trilha> trilhas)
+    {
+        const string query = @"insert into trilhas (nome) values (@nome) returning id;";
+
+        foreach (Trilha trilha in trilhas)
+        {
+            int id = await _session.Connection.ExecuteScalarAsync<int>(new CommandDefinition(query, trilha,
+                _session.Transaction));
+
+            trilha.Id = TrilhaId.Create(id);
+        }
     }
 }

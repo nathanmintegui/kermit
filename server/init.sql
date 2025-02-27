@@ -2,26 +2,17 @@ drop table IF EXISTS
     trilhas,
     edicoes,
     calendarios,
-    dias cascade;
+    dias,
+    competencias,
+    eventos,
+    trilhas_competencias,
+    conteudos_programaticos,
+    delete cascade;
 
-create table usuarios
+create table competencias
 (
-);
-
-create table roles
-(
-);
-
-create table grupos
-(
-);
-
-create table tarefas
-(
-);
-
-create table trabalhos
-(
+    id   integer generated always as identity primary key,
+    nome varchar(64) unique not null
 );
 
 create table trilhas
@@ -32,6 +23,9 @@ create table trilhas
 
 create table eventos
 (
+    id   integer generated always as identity primary key,
+    nome varchar(64) unique not null,
+    cor  varchar unique     not null
 );
 
 create table edicoes
@@ -43,25 +37,27 @@ create table edicoes
 
 create table calendarios
 (
-    id          integer generated always as identity primary key,
-    --id uuid primary key default gen_random_uuid()
-    id_trilha   int       not null references trilhas (id),
-    id_edicao   int       not null references edicoes (id),
-    criado_em   timestamp not null,
-    alterado_em timestamp not null
+    id          uuid primary key default gen_random_uuid(),
+    edicao_id   int         not null references edicoes (id),
+    criado_em   timestamptz not null,
+    alterado_em timestamptz not null
 );
 
-create table dias
+create table trilhas_competencias
 (
     id            integer generated always as identity primary key,
-    id_calendario int       not null,
-    id_evento     int       not null,
-    data          date      not null,
-    criado_em     timestamp not null,
-    alterado_em   timestamp not null
+    ano_mes       int  not null check ((ano_mes % 100) between 1 and 12),
+    trilha_id     int  not null references trilhas (id),
+    calendario_id uuid not null references calendarios (id),
+    unique (ano_mes, trilha_id, calendario_id)
 );
 
-/* módulo de feedbacks */
-create table avaliacoes
+create table conteudos_programaticos
 (
+    id                    integer generated always as identity primary key,
+    id_competencia_trilha int         not null references trilhas_competencias (id),
+    id_evento             int         not null references eventos (id),
+    dia                   smallint    not null check ( dia between 1 and 31),
+    criado_em             timestamptz not null,
+    alterado_em           timestamptz not null
 );

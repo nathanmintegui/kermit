@@ -6,11 +6,9 @@ namespace Kermit.Models;
 
 public class Edicao
 {
-    public EdicaoId Id { get; private set; }
-    public NomeEdicao Nome { get; private set; }
-    public bool EmAndamento { get; private set; }
-
+#pragma warning disable CS8618, CS9264
     private Edicao() { }
+#pragma warning restore CS8618, CS9264
 
     private Edicao(EdicaoId id, NomeEdicao nome, bool emAndamento)
     {
@@ -42,6 +40,10 @@ public class Edicao
 
         return edicao;
     }
+
+    public EdicaoId Id { get; internal set; }
+    public NomeEdicao Nome { get; private set; }
+    public bool EmAndamento { get; private set; }
 }
 
 public record struct EdicaoId(int Valor)
