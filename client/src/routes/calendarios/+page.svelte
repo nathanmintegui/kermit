@@ -35,6 +35,14 @@
 	};
 
 	const handleClickDiaCalendario = (data: string): void => {
+		if (!isAdmin) {
+			return;
+		}
+
+		if (mode === MODO.VISUALIZACAO.valor) {
+			return;
+		}
+
 		const id = data;
 
 		if (!id) {
