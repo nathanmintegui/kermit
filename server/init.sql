@@ -1,19 +1,11 @@
 drop table IF EXISTS
     trilhas,
+    eventos,
     edicoes,
     calendarios,
-    dias,
-    competencias,
-    eventos,
-    trilhas_competencias,
-    conteudos_programaticos,
+    meses_calendario,
+    dias_calendario,
     delete cascade;
-
-create table competencias
-(
-    id   integer generated always as identity primary key,
-    nome varchar(64) unique not null
-);
 
 create table trilhas
 (
@@ -24,8 +16,8 @@ create table trilhas
 create table eventos
 (
     id   integer generated always as identity primary key,
-    nome varchar(64) unique not null,
-    cor  varchar unique     not null
+    nome varchar(128) unique not null,
+    cor  varchar(7) unique  not null
 );
 
 create table edicoes
@@ -38,30 +30,32 @@ create unique index ja_existe_edicao_em_andamento on edicoes (em_andamento) wher
 
 create table calendarios
 (
-    id          uuid primary key default gen_random_uuid(),
-    edicao_id   int         not null references edicoes (id),
-    criado_em   timestamptz not null,
-    alterado_em timestamptz not null
+    id        uuid primary key default gen_random_uuid(),
+    edicao_id int not null references edicoes (id),
+    trilha_id int not null references trilhas (id),
+    unique (edicao_id, trilha_id)
 );
 
-create table trilhas_competencias
+create table meses_calendario
 (
     id            integer generated always as identity primary key,
-    ano_mes       INT  NOT NULL CHECK (
-        (ano_mes % 100 BETWEEN 1 AND 12)
-            AND (ano_mes / 100 >= EXTRACT(YEAR FROM CURRENT_DATE))
-        ),
-    trilha_id     int  not null references trilhas (id),
-    calendario_id uuid not null references calendarios (id),
-    unique (ano_mes, trilha_id, calendario_id)
+    calendario_id uuid     not null references calendarios (id),
+    mes           smallint check (mes between 1 and 12),
+    ano           smallint not null check ( ano >= extract(year from current_date) ),
+    unique (calendario_id, mes, ano)
 );
 
-create table conteudos_programaticos
+create table dias_calendario
 (
-    id                    integer generated always as identity primary key,
-    id_competencia_trilha int         not null references trilhas_competencias (id),
-    id_evento             int         not null references eventos (id),
-    dia                   smallint    not null check ( dia between 1 and 31),
-    criado_em             timestamptz not null,
-    alterado_em           timestamptz not null
+    id                integer generated always as identity primary key,
+    mes_calendario_id int      not null references meses_calendario (id),
+    id_evento         int      not null references eventos (id),
+    dia               smallint not null check ( dia between 1 and 31)
 );
+
+CREATE INDEX idx_calendarios_edicao_id ON calendarios (edicao_id);
+CREATE INDEX idx_calendarios_trilha_id ON calendarios (trilha_id);
+CREATE INDEX idx_meses_calendario_calendario_id ON meses_calendario (calendario_id);
+CREATE INDEX idx_dias_calendario_mes_calendario_id ON dias_calendario (mes_calendario_id);
+CREATE INDEX idx_dias_calendario_id_evento ON dias_calendario (id_evento);
+CREATE INDEX idx_dias_calendario_date ON dias_calendario (mes_calendario_id, dia);
