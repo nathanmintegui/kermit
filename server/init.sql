@@ -46,7 +46,10 @@ create table calendarios
 create table trilhas_competencias
 (
     id            integer generated always as identity primary key,
-    ano_mes       int  not null check ((ano_mes % 100) between 1 and 12),
+    ano_mes       INT  NOT NULL CHECK (
+        (ano_mes % 100 BETWEEN 1 AND 12)
+            AND (ano_mes / 100 >= EXTRACT(YEAR FROM CURRENT_DATE))
+        ),
     trilha_id     int  not null references trilhas (id),
     calendario_id uuid not null references calendarios (id),
     unique (ano_mes, trilha_id, calendario_id)
