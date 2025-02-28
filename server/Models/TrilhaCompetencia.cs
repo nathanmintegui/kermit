@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Globalization;
+
+using Kermit.Exceptions;
 
 namespace Kermit.Models;
 
@@ -109,6 +112,24 @@ public sealed record AnoMes
     public int GetValorAno()
     {
         return Value / 100;
+    }
+
+    /*
+     * Gera o valor do ano mês baseado em uma string que representa a data.
+     */
+    public static Tuple<int, int> GetValorAnoEMes(string data)
+    {
+        if (!string.IsNullOrWhiteSpace(data))
+        {
+            throw new ArgumentException("Parâmetro data não pode ser vazio.");
+        }
+
+        if (!DateOnly.TryParse(data, new CultureInfo("pt-BR"), DateTimeStyles.None, out DateOnly dateValue))
+        {
+            throw new DomainException($"Data {data} inválida e/ou formato inválido.");
+        }
+
+        return Tuple.Create(dateValue.Year, dateValue.Month);
     }
 
     public int Value { get; private set; }

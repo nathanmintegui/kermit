@@ -1,5 +1,8 @@
+using System.Globalization;
+
 using Kermit.Database;
 using Kermit.dto.calendario;
+using Kermit.Dto.ConteudoProgramatico;
 using Kermit.Dto.Edicao;
 using Kermit.Dto.Trillha;
 using Kermit.Models;
@@ -168,6 +171,99 @@ public class CalendarioController : ControllerBase
         {
             unitOfWork.Dispose();
         }
+
+        return NoContent();
+    }
+
+    [HttpPost]
+    [Route("{id}/conteudo-programatico")]
+    public async Task<IActionResult> CriarConteudoProgramatico(
+        [FromRoute] Guid id,
+        [FromBody] CriarConteudoProgramaticoRequest request,
+        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] ICalendarioRepository calendarioRepository,
+        [FromServices] IEventoRepository eventoRepository)
+    {
+        /*
+         * Passo 1 - Validar ID calendário
+         */
+        Calendario? calendario = await calendarioRepository.FindByIdAsync(id);
+        if (calendario is null)
+        {
+            return NotFound($"Calendário com ID {id} não encontrado.");
+        }
+
+        if (!calendario.edicao.EmAndamento)
+        {
+            return Conflict("Calendário pertence à uma edição antiga/finalizada.");
+        }
+
+        /*
+         * Passo 2 - validar a request
+         */
+        if (string.IsNullOrWhiteSpace(request.ConteudoProgramatico))
+        {
+            return BadRequest("Campo conteúdo programático não pode ser vazio.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Cor))
+        {
+            return BadRequest("Campo cor não pode ser vazio.");
+        }
+
+        foreach (string data in request.Datas)
+        {
+            if (!DateOnly.TryParse(data, new CultureInfo("pt-BR"), DateTimeStyles.None, out DateOnly _))
+            {
+                return UnprocessableEntity($"Data {data} inválida e/ou formato inválido.");
+            }
+        }
+
+        List<Evento> eventos = await eventoRepository.FindAllAsync();
+        if (eventos.Find(e =>
+                e.Nome.Value.Equals(request.ConteudoProgramatico.Trim(),
+                    StringComparison.OrdinalIgnoreCase)) != null)
+        {
+            return BadRequest($"Já existe um evento com o nome {request.ConteudoProgramatico}.");
+        }
+
+        if (eventos.Find(e =>
+                e.Cor.Value.Equals(request.Cor.Trim(),
+                    StringComparison.OrdinalIgnoreCase)) != null)
+        {
+            return BadRequest($"Já existe uma cor com o código {request.Cor}.");
+        }
+
+        /*
+         * Validar se as datas da request refletem os registros da tabela trilhas_competencias
+         */
+
+        List<int> listaAnoMes = [];
+        foreach (string data in request.Datas)
+        {
+            (int ano, int mes) = AnoMes.GetValorAnoEMes(data);
+
+            AnoMes anoMes = new(ano, mes);
+
+            listaAnoMes.Add(anoMes.Value);
+        }
+
+        List<TrilhaCompetencia> listaTrilhaCompetencia =
+            await calendarioRepository.FindAllTrilhaCompetenciaByAnoMesAndCalendarioAsync(listaAnoMes, calendario);
+
+        if (listaTrilhaCompetencia.Count == 0)
+        {
+            return BadRequest("Não existem competências cadastradas com as data informadas.");
+        }
+
+        foreach (TrilhaCompetencia trilhaCompetencia in listaTrilhaCompetencia)
+        {
+            /*
+             * Verifica se a data da request existe na competência.
+             */
+        }
+
+        /* Passo 3 - Inserir os dados */
 
         return NoContent();
     }

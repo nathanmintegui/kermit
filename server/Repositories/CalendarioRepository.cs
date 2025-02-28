@@ -51,4 +51,15 @@ public class CalendarioRepository : ICalendarioRepository
             trilhaCompetencia.Id = TrilhaComptenciaId.Create(id);
         }
     }
+
+    public Task<Calendario?> FindByIdAsync(Guid calendarioId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<TrilhaCompetencia>> FindAllTrilhaCompetenciaByAnoMesAndCalendarioAsync(List<int> anoMes,
+        Calendario calendario)
+    {
+        throw new NotImplementedException();
+    }
 }
