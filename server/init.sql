@@ -34,6 +34,7 @@ create table edicoes
     nome         varchar(64) unique not null,
     em_andamento boolean            not null
 );
+create unique index ja_existe_edicao_em_andamento on edicoes (em_andamento) where em_andamento = true;
 
 create table calendarios
 (
