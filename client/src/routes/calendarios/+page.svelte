@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import Modal from './Modal.svelte';
 
 	const MODO = {
 		VISUALIZACAO: {
@@ -16,6 +17,7 @@
 
 	let mode = $state(MODO.VISUALIZACAO.valor);
 	let listaDiasSelecionadosEdicao: string[] = $state([]);
+	let showModal = $state(false);
 
 	let competencias = data?.data?.competencias;
 
@@ -57,6 +59,32 @@
 	{#if isAdmin}
 		<button onclick={handleClickEditarModoEdicao}>Editar</button>
 	{/if}
+
+	<button onclick={() => (showModal = true)}> show modal</button>
+
+	<Modal bind:showModal>
+		{#snippet header()}
+			<h2>
+				modal
+				<small><em>adjective</em> mod·al \ˈmō-dəl\</small>
+			</h2>
+		{/snippet}
+
+		<div class="main-content">
+			<div class="flex flex-col gap-5">
+				<p>Dias selecionados</p>
+				<div class="flex flex-col gap-3">
+					{#each listaDiasSelecionadosEdicao as dia}
+						<p>{dia}</p>
+					{/each}
+				</div>
+
+				<input type="text" placeholder="Digite o nome do evento:" />
+
+				<button>Salvar</button>
+			</div>
+		</div>
+	</Modal>
 
 	<div class="calendar-container">
 		{#each competencias as competencia}
