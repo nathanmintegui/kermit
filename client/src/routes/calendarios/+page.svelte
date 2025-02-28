@@ -179,7 +179,6 @@
         text-align: center;
         background-color: #ffffff;
         border-radius: 4px;
-        cursor: pointer;
         transition: all 0.3s ease;
         font-size: 1rem;
     }
