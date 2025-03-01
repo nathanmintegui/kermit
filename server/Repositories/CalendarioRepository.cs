@@ -62,4 +62,24 @@ public class CalendarioRepository : ICalendarioRepository
     {
         throw new NotImplementedException();
     }
+
+    public Task<List<string>> FindAllCompetenciasCalendarioGeralAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<string>> FindAllCompetenciasByCalendarioIdAsync(Guid id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoCalendarioGeralAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoByCalendarioIdAsync(Guid id)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -10,4 +10,9 @@ public interface ICalendarioRepository
 
     Task<List<TrilhaCompetencia>> FindAllTrilhaCompetenciaByAnoMesAndCalendarioAsync(List<int> anoMes,
         Calendario calendario);
+
+    Task<List<string>> FindAllCompetenciasCalendarioGeralAsync();
+    Task<List<string>> FindAllCompetenciasByCalendarioIdAsync(Guid id);
+    Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoCalendarioGeralAsync();
+    Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoByCalendarioIdAsync(Guid id);
 }

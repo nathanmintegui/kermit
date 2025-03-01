@@ -21,16 +21,25 @@ namespace Kermit.Controllers;
 public class CalendarioController : ControllerBase
 {
     [HttpGet]
-    public IActionResult Get([FromQuery] int? trilha)
+    [Route("{id}")]
+    public async Task<IActionResult> Get([FromQuery] Guid? id,
+        [FromServices] ICalendarioRepository calendarioRepository)
     {
-        /* NOTE: if query param is informed then proceed to fetch from the database,
-         * otherwise, the default value should be the general calendar identifier.
-         */
+        Task<List<string>> competenciasCalendarioTask = id is null
+            ? calendarioRepository.FindAllCompetenciasCalendarioGeralAsync()
+            : calendarioRepository.FindAllCompetenciasByCalendarioIdAsync((Guid)id);
 
-        string[] competenciasCalendarioGeral = ["02/2025", "03/2025", "04/2025"];
+        Task<List<ConteudoProgramatico>> conteudosProgramaticosTask = id is null
+            ? calendarioRepository.FindAllConteudoProgramaticoCalendarioGeralAsync()
+            : calendarioRepository.FindAllConteudoProgramaticoByCalendarioIdAsync((Guid)id);
 
-        List<Competencia> competencias = new(competenciasCalendarioGeral.Length);
-        foreach (string compentecia in competenciasCalendarioGeral)
+        await Task.WhenAll(competenciasCalendarioTask, conteudosProgramaticosTask);
+
+        List<string> competenciasCalendario = await competenciasCalendarioTask;
+        List<ConteudoProgramatico> conteudosProgramaticos = await conteudosProgramaticosTask;
+
+        List<Competencia> competencias = new(competenciasCalendario.Count);
+        foreach (string compentecia in competenciasCalendario)
         {
             int mes = int.Parse(compentecia.Split("/")[0]);
             int ano = int.Parse(compentecia.Split("/")[1]);
