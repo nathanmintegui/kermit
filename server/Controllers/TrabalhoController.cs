@@ -1,9 +1,12 @@
+using Kermit.Database;
 using Kermit.Dto.Grupo;
 using Kermit.Dto.Trabalho;
 using Kermit.Models;
 using Kermit.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
+
+using Npgsql;
 
 namespace Kermit.Controllers;
 
@@ -44,5 +47,76 @@ public class TrabalhoController : ControllerBase
         TrabalhoResponse response = new(trabalho.Id, trabalho.Nome, gruposDtos);
 
         return Ok(response);
+    }
+
+    [HttpPost]
+    [Route("trilhas/{trilhaId}")]
+    public async Task<IActionResult> Post(
+        [FromRoute] int trilhaId,
+        [FromBody] CriarTrabalhoRequest request,
+        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] ITrabalhoRepository trabalhoRepository,
+        [FromServices] ITrilhaRepository trilhaRepository,
+        [FromServices] IEdicaoRepository edicaoRepository)
+    {
+        if (string.IsNullOrWhiteSpace(request.Nome))
+        {
+            return BadRequest("Campo nome deve ser preenchido.");
+        }
+
+        if (trilhaId < 1)
+        {
+            return BadRequest($"Trilha com ID {trilhaId} inválido.");
+        }
+
+        Trilha? trilha = await trilhaRepository.FindByIdAsync(trilhaId);
+        if (trilha is null)
+        {
+            return NotFound($"Trilha com ID {trilhaId} não encontrada");
+        }
+
+        Trabalho? trabalho = await trabalhoRepository.FindByNomeAndTrilhaIdAsync(request.Nome, trilhaId);
+        if (trabalho is not null)
+        {
+            return Conflict($"Já existe um trabalho cadastrado com o nome ${request.Nome}.");
+        }
+
+        if (request.ShufflePadrao)
+        {
+            /* count quantos alunos existem antes de prosseguir */
+
+            /*
+             * TODO: Modelar classe para realizar o algoritmo de shuffle.
+             */
+        }
+
+        TrilhaEdicao? trilhaEdicao = await trilhaRepository.FindTrilhaEdicaoByTrilhaIdAsync(trilhaId);
+
+        trabalho = Trabalho.Create(request.Nome, trilhaEdicao!.Id);
+
+        unitOfWork.BeginTransaction();
+        try
+        {
+            await trabalhoRepository.SaveAsync(trabalho);
+
+            if (request.ShufflePadrao)
+            {
+                /*
+                 * Persistir os dados nas tabelas de grupos e integrantes.
+                 */
+            }
+
+            unitOfWork.Commit();
+        }
+        catch (NpgsqlException)
+        {
+            unitOfWork.Rollback();
+        }
+        finally
+        {
+            unitOfWork.Dispose();
+        }
+
+        return NoContent();
     }
 }

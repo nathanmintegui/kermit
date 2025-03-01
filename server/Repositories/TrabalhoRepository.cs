@@ -65,4 +65,38 @@ public class TrabalhoRepository : ITrabalhoRepository
 
         return grupos.ToList();
     }
+
+    public async Task<Trabalho?> FindByNomeAndTrilhaIdAsync(string nome, int trilhaId)
+    {
+        Debug.Assert(!string.IsNullOrWhiteSpace(nome), "ID do trabalho não pode ser vazio.");
+
+        const string query = """
+                             select t.*
+                             from trabalhos t
+                                 join trilhas_edicoes td on (td.id = t.trilha_edicao_id)
+                                 join edicoes e on (e.id = td.edicao_id)
+                             where
+                                t.nome = @Nome and
+                                td.trilha_id = @TrilhaId and
+                                e.em_andamento = true;
+                             """;
+
+        Trabalho? trabalho =
+            await _session.Connection.QuerySingleOrDefaultAsync<Trabalho>(query,
+                new { Nome = nome, TrilhaId = trilhaId });
+
+        return trabalho;
+    }
+
+    public async Task SaveAsync(Trabalho trabalho)
+    {
+        Debug.Assert(trabalho is not null, "Parâmetro trabalho não pode ser nulo.");
+
+        const string query = """
+                             INSERT INTO trabalhos (nome, trilha_edicao_id, criado_em, finalizado_em)
+                             VALUES(@Nome, @TrilhaEdicaoId, @CriadoEm, @FinalizadoEm);
+                             """;
+
+        await _session.Connection.ExecuteAsync(query, trabalho, _session.Transaction);
+    }
 }

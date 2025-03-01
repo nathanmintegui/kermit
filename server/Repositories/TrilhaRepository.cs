@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Dapper;
 
 using Kermit.Database;
@@ -48,5 +50,43 @@ public class TrilhaRepository : ITrilhaRepository
 
             trilha.Id = TrilhaId.Create(id);
         }
+    }
+
+    public async Task<Trilha?> FindByIdAsync(int id)
+    {
+        const string query = """
+                             select
+                                t.*
+                             from trilhas_edicoes te
+                                 join edicoes e on (e.id = te.edicao_id)
+                                 join trilhas t on (t.id = te.trilha_id)
+                             where
+                                t.id = @Id and
+                             	e.em_andamento = true;
+                             """;
+
+        Trilha? trilha = await _session.Connection.QueryFirstOrDefaultAsync<Trilha>(query, new { Id = id });
+
+        return trilha;
+    }
+
+    public async Task<TrilhaEdicao?> FindTrilhaEdicaoByTrilhaIdAsync(int id)
+    {
+        Debug.Assert(id > 0, "Trilha id não pode ser negativo.");
+
+        const string query = """
+                             select
+                                te.*
+                             from trilhas_edicoes te
+                                join edicoes e on (e.id = te.edicao_id)
+                             where
+                                te.trilha_id = @TrilhaId and
+                                e.em_andamento = true;
+                             """;
+
+        TrilhaEdicao? trilhaEdicao =
+            await _session.Connection.QueryFirstOrDefaultAsync<TrilhaEdicao>(query, new { TrilhaId = id });
+
+        return trilhaEdicao;
     }
 }
