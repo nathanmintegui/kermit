@@ -19,6 +19,7 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ITrilhaRepository, TrilhaRepository>();
 builder.Services.AddTransient<IEdicaoRepository, EdicaoRepository>();
 builder.Services.AddTransient<ICalendarioRepository, CalendarioRepository>();
+builder.Services.AddTransient<ITrabalhoRepository, TrabalhoRepository>();
 
 SqlMapper.AddTypeHandler(new TrilhaIdTypeHandler());
 SqlMapper.AddTypeHandler(new NomeTrilhaTypeHandler());
