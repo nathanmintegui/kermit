@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
-	import Modal from './Modal.svelte';
+	import type { PageProps } from '../../../../.svelte-kit/types/src/routes';
+	import Modal from '../Modal.svelte';
+	import Footer from '$lib/components/footer/Footer.svelte';
 
 	const MODO = {
 		VISUALIZACAO: {
@@ -19,7 +20,7 @@
 	let listaDiasSelecionadosEdicao: string[] = $state([]);
 	let showModal = $state(false);
 
-	let competencias = data?.data?.competencias;
+	let competencias = data?.calendario?.competencias;
 
 	const formatDate = (date: string) => date.split('/')[0];
 
@@ -131,6 +132,7 @@
 			</div>
 		{/each}
 	</div>
+	<Footer sessaoAtual="Geral" trilhas={data.trilhas} />
 </div>
 
 <style>
