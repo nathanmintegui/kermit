@@ -76,7 +76,9 @@ public class TrilhaRepository : ITrilhaRepository
 
         const string query = """
                              select
-                                te.*
+                                te.id,
+                                te.trilha_id,
+                                te.edicao_id
                              from trilhas_edicoes te
                                 join edicoes e on (e.id = te.edicao_id)
                              where

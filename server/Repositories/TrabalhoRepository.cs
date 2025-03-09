@@ -94,9 +94,12 @@ public class TrabalhoRepository : ITrabalhoRepository
 
         const string query = """
                              INSERT INTO trabalhos (nome, trilha_edicao_id, criado_em, finalizado_em)
-                             VALUES(@Nome, @TrilhaEdicaoId, @CriadoEm, @FinalizadoEm);
+                             VALUES(@Nome, @TrilhaEdicaoId, @CriadoEm, @FinalizadoEm)
+                             RETURNING id;
                              """;
 
-        await _session.Connection.ExecuteAsync(query, trabalho, _session.Transaction);
+        Guid id = await _session.Connection.ExecuteScalarAsync<Guid>(query, trabalho, _session.Transaction);
+        
+        trabalho.Id = id;
     }
 }

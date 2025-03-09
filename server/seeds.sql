@@ -9,7 +9,10 @@ values ('VS 15', true),
        ('VS 16', false);
 
 INSERT INTO trilhas_edicoes (trilha_id, edicao_id)
-VALUES (1, 1);
+VALUES (1, 1),
+       (2, 1),
+       (3, 1),
+       (4, 1);
 
 INSERT INTO usuarios DEFAULT
 values;
@@ -26,7 +29,7 @@ INSERT INTO cargos (nome, abreviacao)
 values ('Tech Lead', 'TL'),
        ('Desenvolvedor', 'DEV');
 
-INSERT INTO alunos (usuario_id, nome, trilha_id, ativo, criado_em, alterado_em)
+INSERT INTO alunos (usuario_id, nome, trilha_edicao_id, ativo, criado_em, alterado_em)
 values (1, 'Fulano', 2, true, current_timestamp, current_timestamp),
        (2, 'Ciclano', 2, true, current_timestamp, current_timestamp),
        (3, 'Beltrano', 2, true, current_timestamp, current_timestamp);
@@ -119,3 +122,21 @@ $$
     END
 $$;
 
+/* Alunos */
+DO
+$$
+    DECLARE
+        i INTEGER;
+    BEGIN
+        FOR i IN 1..60
+            LOOP
+                INSERT INTO alunos (usuario_id, nome, trilha_edicao_id, ativo, criado_em, alterado_em)
+                VALUES ((SELECT id FROM usuarios ORDER BY random() LIMIT 1),
+                        'Aluno ' || i,
+                        (i % 3) + 1,
+                        CASE WHEN random() > 0.5 THEN true ELSE false END,
+                        NOW() - INTERVAL '1 day' * (i % 30),
+                        NOW() - INTERVAL '1 day' * (i % 30));
+            END LOOP;
+    END
+$$;

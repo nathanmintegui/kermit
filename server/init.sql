@@ -12,6 +12,7 @@ drop table IF EXISTS
     trabalhos,
     grupos,
     integrantes,
+    historico_participacao_grupos,
     delete cascade;
 
 create table trilhas
@@ -89,13 +90,13 @@ create table cargos
 
 create table alunos
 (
-    id          integer generated always as identity primary key,
-    usuario_id  int          not null references usuarios (id),
-    nome        varchar(256) not null unique,
-    trilha_id   int          not null references trilhas (id),
-    ativo       boolean      not null,
-    criado_em   timestamptz  not null,
-    alterado_em timestamptz  not null
+    id               integer generated always as identity primary key,
+    usuario_id       int          not null references usuarios (id),
+    nome             varchar(256) not null unique,
+    trilha_edicao_id int          not null references trilhas_edicoes (id),
+    ativo            boolean      not null,
+    criado_em        timestamptz  not null,
+    alterado_em      timestamptz  not null
 );
 
 create table trabalhos
@@ -121,6 +122,16 @@ create table integrantes
     aluno_id int not null references alunos (id),
     cargo_id int not null references cargos (id),
     grupo_id int not null references grupos (id),
+    unique (aluno_id, cargo_id, grupo_id)
+);
+
+create table historico_participacao_grupos
+(
+    id                    int generated always as identity primary key,
+    grupo_id              int not null references grupos (id),
+    aluno_id              int not null references alunos (id),
+    cargo_id              int not null references cargos (id),
+    colegas_participantes jsonb default '{}'::jsonb,
     unique (aluno_id, cargo_id, grupo_id)
 );
 
