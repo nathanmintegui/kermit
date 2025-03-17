@@ -19,12 +19,18 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<ITrilhaRepository, TrilhaRepository>();
 builder.Services.AddTransient<IEdicaoRepository, EdicaoRepository>();
 builder.Services.AddTransient<ICalendarioRepository, CalendarioRepository>();
+builder.Services.AddTransient<ITrabalhoRepository, TrabalhoRepository>();
+builder.Services.AddTransient<IAlunoRepository, AlunoRepository>();
+builder.Services.AddTransient<IGrupoRepository, GrupoRepository>();
+builder.Services.AddTransient<IIntegranteRepository, IntegranteRepository>();
 
 SqlMapper.AddTypeHandler(new TrilhaIdTypeHandler());
 SqlMapper.AddTypeHandler(new NomeTrilhaTypeHandler());
 SqlMapper.AddTypeHandler(new EdicaoIdTypeHandler());
 SqlMapper.AddTypeHandler(new NomeEdicaoTypeHandler());
 SqlMapper.AddTypeHandler(new CalendarioIdTypeHandler());
+
+DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 WebApplication app = builder.Build();
 
