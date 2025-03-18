@@ -47,10 +47,8 @@ create table trilhas_edicoes
 
 create table calendarios
 (
-    id        uuid primary key default gen_random_uuid(),
-    edicao_id int not null references edicoes (id),
-    trilha_id int not null references trilhas (id),
-    unique (edicao_id, trilha_id)
+    id               uuid primary key default gen_random_uuid(),
+    trilha_edicao_id int not null references trilhas_edicoes (id)
 );
 
 create table meses_calendario
@@ -58,7 +56,7 @@ create table meses_calendario
     id            integer generated always as identity primary key,
     calendario_id uuid     not null references calendarios (id),
     mes           smallint check (mes between 1 and 12),
-    ano           smallint not null check ( ano >= extract(year from current_date) ),
+    ano           smallint not null check ( ano between extract(year from current_date) and 9999),
     unique (calendario_id, mes, ano)
 );
 
@@ -135,8 +133,6 @@ create table historico_participacao_grupos
     unique (aluno_id, cargo_id, grupo_id)
 );
 
-CREATE INDEX idx_calendarios_edicao_id ON calendarios (edicao_id);
-CREATE INDEX idx_calendarios_trilha_id ON calendarios (trilha_id);
 CREATE INDEX idx_meses_calendario_calendario_id ON meses_calendario (calendario_id);
 CREATE INDEX idx_dias_calendario_mes_calendario_id ON dias_calendario (mes_calendario_id);
 CREATE INDEX idx_dias_calendario_id_evento ON dias_calendario (id_evento);

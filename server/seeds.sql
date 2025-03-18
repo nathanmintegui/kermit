@@ -37,18 +37,6 @@ values (1, 'Fulano', 2, true, current_timestamp, current_timestamp),
 INSERT INTO trabalhos (id, nome, trilha_edicao_id, criado_em, finalizado_em)
 values (gen_random_uuid(), 'Abrindo PR Github', 1, current_timestamp, current_timestamp);
 
-select *
-from trabalhos;
-INSERT INTO grupos (nome, trabalho_id)
-values ('Grupo 1', '720d7ff1-7561-4755-b655-595d6b512214'),
-       ('Grupo 2', '720d7ff1-7561-4755-b655-595d6b512214'),
-       ('Grupo 3', '720d7ff1-7561-4755-b655-595d6b512214');
-
-INSERT INTO integrantes (aluno_id, cargo_id, grupo_id)
-values (1, 1, 1),
-       (2, 2, 1),
-       (3, 2, 2);
-
 -- Insert mock data into 'eventos'
 DO
 $$
@@ -67,19 +55,16 @@ $$;
 DO
 $$
     DECLARE
-        edicao_id INT;
-        trilha_id INT;
+        trilha_edicao_id INT;
     BEGIN
-        FOR edicao_id IN 1..2
+        FOR trilha_edicao_id IN (SELECT id FROM trilhas_edicoes)
             LOOP
-                FOR trilha_id IN 1..3
-                    LOOP
-                        INSERT INTO calendarios (edicao_id, trilha_id)
-                        VALUES (edicao_id, trilha_id);
-                    END LOOP;
+                INSERT INTO calendarios (trilha_edicao_id)
+                VALUES (trilha_edicao_id);
             END LOOP;
     END
 $$;
+
 
 /* Meses Calendários */
 DO

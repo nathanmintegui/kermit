@@ -21,22 +21,20 @@ namespace Kermit.Controllers;
 public class CalendarioController : ControllerBase
 {
     [HttpGet]
-    [Route("{id}")]
-    public async Task<IActionResult> Get([FromQuery] Guid? id,
+    [Route("{id:guid?}")]
+    public async Task<IActionResult> Get(
+        [FromRoute] Guid? id,
         [FromServices] ICalendarioRepository calendarioRepository)
     {
-        Task<List<string>> competenciasCalendarioTask = id is null
-            ? calendarioRepository.FindAllCompetenciasCalendarioGeralAsync()
-            : calendarioRepository.FindAllCompetenciasByCalendarioIdAsync((Guid)id);
+        List<string> competenciasCalendario = id is null
+            ? await calendarioRepository.FindAllCompetenciasCalendarioGeralAsync()
+            : await calendarioRepository.FindAllCompetenciasByCalendarioIdAsync((Guid)id);
 
-        Task<List<ConteudoProgramatico>> conteudosProgramaticosTask = id is null
-            ? calendarioRepository.FindAllConteudoProgramaticoCalendarioGeralAsync()
-            : calendarioRepository.FindAllConteudoProgramaticoByCalendarioIdAsync((Guid)id);
-
-        await Task.WhenAll(competenciasCalendarioTask, conteudosProgramaticosTask);
-
-        List<string> competenciasCalendario = await competenciasCalendarioTask;
-        List<ConteudoProgramatico> conteudosProgramaticos = await conteudosProgramaticosTask;
+        /*
+        List<ConteudoProgramatico> conteudosProgramaticos = id is null
+            ? await calendarioRepository.FindAllConteudoProgramaticoCalendarioGeralAsync()
+            : await calendarioRepository.FindAllConteudoProgramaticoByCalendarioIdAsync((Guid)id);
+        */
 
         List<Competencia> competencias = new(competenciasCalendario.Count);
         foreach (string compentecia in competenciasCalendario)

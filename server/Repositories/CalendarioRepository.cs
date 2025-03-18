@@ -63,14 +63,49 @@ public class CalendarioRepository : ICalendarioRepository
         throw new NotImplementedException();
     }
 
-    public Task<List<string>> FindAllCompetenciasCalendarioGeralAsync()
+    public async Task<List<string>> FindAllCompetenciasCalendarioGeralAsync()
     {
-        throw new NotImplementedException();
+        const string query = """
+                             select
+                             	mc.mes || '/' || mc.ano as competencias
+                             from
+                                meses_calendario mc
+                             where
+                                mc.calendario_id = (
+                                    select
+                                        c.id
+                                    from 
+                                        calendarios c
+                                    join trilhas_edicoes te on te.id = c.trilha_edicao_id
+                                    join edicoes e on e.id = te.edicao_id
+                                    join trilhas t on t.id = te.trilha_id
+                                    where
+                                        e.em_andamento = true and
+                                        t.id = 1
+                                )
+                             order by
+                                mc.ano, mc.mes;
+                             """;
+
+        List<string> competencias = (await _session.Connection.QueryAsync<string>(query))?.ToList() ?? [];
+
+        return competencias;
     }
 
-    public Task<List<string>> FindAllCompetenciasByCalendarioIdAsync(Guid id)
+    public async Task<List<string>> FindAllCompetenciasByCalendarioIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        const string query = """
+                             select
+                             	mc.mes || '/' || mc.ano as competencias
+                             from meses_calendario mc
+                             where mc.calendario_id = @Id
+                             order by mc.ano, mc.mes;
+                             """;
+
+        List<string> competencias =
+            (await _session.Connection.QueryAsync<string>(query, new { id }))?.ToList() ?? [];
+
+        return competencias;
     }
 
     public Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoCalendarioGeralAsync()
