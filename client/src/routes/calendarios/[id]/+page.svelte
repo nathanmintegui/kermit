@@ -61,7 +61,7 @@
 	};
 </script>
 
-<div class="prevent-select text-center min-h-[100%] {mode === MODO.EDICAO.valor && MODO.EDICAO.estilo}">
+<div id="page" class="prevent-select text-center min-h-[100%] {mode === MODO.EDICAO.valor && MODO.EDICAO.estilo}">
 	<h1 class="display-4">Calendário Geral</h1>
 	<p>MODO - <strong> {mode} </strong></p>
 
@@ -88,9 +88,13 @@
 					{/each}
 				</div>
 
-				<input type="text" placeholder="Digite o nome do evento:" />
+				<form method="POST" action="?/addEvent">
+					<input type="text" placeholder="Digite o nome do evento:" name="evento" />
 
-				<button>Salvar</button>
+					<input name="dias" type="hidden" value={JSON.stringify(listaDiasSelecionadosEdicao)}>
+
+					<button>Salvar</button>
+				</form>
 			</div>
 		</div>
 	</Modal>
@@ -139,6 +143,12 @@
     * {
         cursor: default;
     }
+
+		#page {
+				background-color: rgba(255, 255, 255, 1);
+				background-image: radial-gradient(rgba(0, 0, 0, 0.2) 0.9px, rgba(255, 255, 255, 1) 0.9px);
+				background-size: 18px 18px;
+		}
 
     .calendar-container {
         display: flex;

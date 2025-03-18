@@ -1,8 +1,9 @@
 import type { PageLoad } from '../../../../.svelte-kit/types/src/routes';
 import { mockRequest } from '$lib/utils/http-client.local';
+import type { Action } from './$types';
 
 export const load: PageLoad = async ({ fetch, params }) => {
-	console.log("ID da url ", params?.id);
+	//console.log('ID da url ', params?.id);
 
 	const host = 'http://localhost:5201';
 
@@ -28,3 +29,16 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		trilhas: trilhas.data
 	};
 };
+
+export const actions = {
+	addEvent: async ({ request }) => {
+		const data = await request.formData();
+
+		const body = {
+			evento: data.get('evento'),
+			dias: JSON.parse(data.get('dias'))
+		};
+
+		return { success: true };
+	}
+} satisfies Action;
