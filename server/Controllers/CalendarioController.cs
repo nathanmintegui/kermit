@@ -182,14 +182,16 @@ public class CalendarioController : ControllerBase
         return NoContent();
     }
 
+    
     [HttpPost]
-    [Route("{id}/conteudo-programatico")]
+    [Route("{id:guid}/conteudo-programatico")]
     public async Task<IActionResult> CriarConteudoProgramatico(
         [FromRoute] Guid id,
         [FromBody] CriarConteudoProgramaticoRequest request,
         [FromServices] IUnitOfWork unitOfWork,
         [FromServices] ICalendarioRepository calendarioRepository,
-        [FromServices] IEventoRepository eventoRepository)
+        [FromServices] IEventoRepository eventoRepository,
+        [FromServices] IDiasCalendarioRepository diasCalendarioRepository)
     {
         /*
          * Passo 1 - Validar ID calendário
@@ -216,6 +218,11 @@ public class CalendarioController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Cor))
         {
             return BadRequest("Campo cor não pode ser vazio.");
+        }
+
+        if (request.Datas.Count == 0)
+        {
+            return BadRequest("Campo datas não pode ser vazio.");
         }
 
         foreach (string data in request.Datas)
@@ -245,32 +252,52 @@ public class CalendarioController : ControllerBase
          * Validar se as datas da request refletem os registros da tabela trilhas_competencias
          */
 
-        List<int> listaAnoMes = [];
+        List<string> competenciasCalendario = await calendarioRepository.FindAllCompetenciasByCalendarioIdAsync(id);
+        if (competenciasCalendario.Count == 0)
+        {
+            return BadRequest($"Não existem competências cadastradas para o calendário ${id}.");
+        }
+
+        /*
+         * Verifica se a data da request existe na competência.
+         */
         foreach (string data in request.Datas)
         {
-            (int ano, int mes) = AnoMes.GetValorAnoEMes(data);
-
-            AnoMes anoMes = new(ano, mes);
-
-            listaAnoMes.Add(anoMes.Value);
-        }
-
-        List<TrilhaCompetencia> listaTrilhaCompetencia =
-            await calendarioRepository.FindAllTrilhaCompetenciaByAnoMesAndCalendarioAsync(listaAnoMes, calendario);
-
-        if (listaTrilhaCompetencia.Count == 0)
-        {
-            return BadRequest("Não existem competências cadastradas com as data informadas.");
-        }
-
-        foreach (TrilhaCompetencia trilhaCompetencia in listaTrilhaCompetencia)
-        {
-            /*
-             * Verifica se a data da request existe na competência.
-             */
+            if (!competenciasCalendario.Contains(data))
+            {
+                return Conflict($"Não há competências cadastradas para a data ${data}");
+            }
         }
 
         /* Passo 3 - Inserir os dados */
+
+        unitOfWork.BeginTransaction();
+        try
+        {
+            Cor corEvento = new(new NonEmptyString(request.Cor));
+            NonEmptyString nomeEvento = new(request.ConteudoProgramatico);
+            Evento evento = Evento.Create(nomeEvento, corEvento);
+
+            await eventoRepository.AddAsync(evento);
+
+            List<DateOnly> dias = request.Datas
+                .Select(data => DateOnly.Parse(data, new CultureInfo("pt-BR"), DateTimeStyles.None))
+                .ToList();
+
+            await diasCalendarioRepository.AddAsync(calendario.Id, evento.Id, dias);
+
+            unitOfWork.Commit();
+        }
+        catch (NpgsqlException e)
+        {
+            unitOfWork.Rollback();
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            unitOfWork.Dispose();
+        }
 
         return NoContent();
     }

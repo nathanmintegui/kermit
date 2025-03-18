@@ -20,7 +20,7 @@ public sealed class Evento
         return evento;
     }
 
-    public EventoId Id { get; protected set; }
+    public EventoId Id { get; internal set; }
     public NomeEvento Nome { get; private set; }
     public Cor Cor { get; private set; }
 }
