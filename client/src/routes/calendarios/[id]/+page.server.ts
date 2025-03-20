@@ -32,12 +32,29 @@ export const load: PageLoad = async ({ fetch, params }) => {
 
 export const actions = {
 	addEvent: async ({ request }) => {
-		const data = await request.formData();
+		const HOST = 'http://localhost:5201';
+
+		const formData = await request.formData();
 
 		const body = {
-			evento: data.get('evento'),
-			dias: JSON.parse(data.get('dias'))
+			conteudoProgramatico : formData.get('evento'),
+			datas: JSON.parse(formData.get('dias')),
+			cor: '#FFFFFF'
 		};
+
+		const UUID = "5353aedc-c178-4677-a9dd-53cb2644a078";
+		const uri = `${HOST}/v1/calendarios/${UUID}/conteudo-programatico`;
+		const res = await fetch(uri, {
+			method: 'POST',
+			body: JSON.stringify(body),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!res.ok) {
+			console.error(`Error processing POST request to ${uri} | response: `, res);
+		}
 
 		return { success: true };
 	}
