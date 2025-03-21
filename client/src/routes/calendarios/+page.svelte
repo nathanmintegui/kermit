@@ -1,7 +1,8 @@
 <script lang="ts">
-	import type { PageProps } from '../../../../.svelte-kit/types/src/routes';
-	import Modal from '../Modal.svelte';
 	import Footer from '$lib/components/footer/Footer.svelte';
+	import Modal from './components/Modal.svelte';
+	import type { PageProps } from './$types';
+	import { page } from '$app/state';
 
 	const MODO = {
 		VISUALIZACAO: {
@@ -27,7 +28,7 @@
 	/*
 	* TODO: Autenticar usuário e pegar a role.
 	* */
-	const isAdmin = true;
+	const isAdmin = false;
 
 	const handleClickEditarModoEdicao = () => {
 		mode = mode === MODO.EDICAO.valor
@@ -59,99 +60,117 @@
 
 		listaDiasSelecionadosEdicao = listaDiasSelecionadosEdicao.filter(d => d !== id);
 	};
+
+	const getNomeTrilha = (): string => {
+		const param = page.url.searchParams.get('trilha');
+
+		const nomeTrilha = data.trilhas.find(d => d.calendarioId === param);
+
+		return nomeTrilha !== null ? nomeTrilha?.trilha : 'Geral';
+	};
 </script>
 
 <div id="page" class="prevent-select text-center min-h-[100%] {mode === MODO.EDICAO.valor && MODO.EDICAO.estilo}">
-	<h1 class="display-4">Calendário Geral</h1>
-	<p>MODO - <strong> {mode} </strong></p>
+	<header class="border-b p-7 bg-white">
+		<h1 class="font-bold text-3xl">Calendário {getNomeTrilha()}</h1>
+	</header>
 
-	{#if isAdmin}
-		<button onclick={handleClickEditarModoEdicao}>Editar</button>
-	{/if}
+	<div class="page-container">
+		{#if isAdmin}
+			<button onclick={handleClickEditarModoEdicao}>Editar</button>
+			<button onclick={() => (showModal = true)}> show modal</button>
+		{/if}
 
-	<button onclick={() => (showModal = true)}> show modal</button>
+		<Modal bind:showModal>
+			{#snippet header()}
+				<h2>
+					modal
+					<small><em>adjective</em> mod·al \ˈmō-dəl\</small>
+				</h2>
+			{/snippet}
 
-	<Modal bind:showModal>
-		{#snippet header()}
-			<h2>
-				modal
-				<small><em>adjective</em> mod·al \ˈmō-dəl\</small>
-			</h2>
-		{/snippet}
-
-		<div class="main-content">
-			<div class="flex flex-col gap-5">
-				<p>Dias selecionados</p>
-				<div class="flex flex-col gap-3">
-					{#each listaDiasSelecionadosEdicao as dia}
-						<p>{dia}</p>
-					{/each}
-				</div>
-
-				<form method="POST" action="?/addEvent">
-					<input type="text" placeholder="Digite o nome do evento:" name="evento" />
-
-					<input name="dias" type="hidden" value={JSON.stringify(listaDiasSelecionadosEdicao)}>
-
-					<button>Salvar</button>
-				</form>
-			</div>
-		</div>
-	</Modal>
-
-	<div class="calendar-container">
-		{#each competencias as competencia}
-			<div class="b-0">
-				<div class="calendar">
-					<div class="month-indicator">{competencia?.mes}</div>
-					<div class="day-of-week">
-						<div>Dom</div>
-						<div>Seg</div>
-						<div>Ter</div>
-						<div>Qua</div>
-						<div>Qui</div>
-						<div>Sex</div>
-						<div>Sáb</div>
+			<div class="main-content">
+				<div class="flex flex-col gap-5">
+					<p>Dias selecionados</p>
+					<div class="flex flex-col gap-3">
+						{#each listaDiasSelecionadosEdicao as dia}
+							<p>{dia}</p>
+						{/each}
 					</div>
-					<div class="date-grid">
-						{#each competencia?.dias as dia}
-							{#if dia?.data == ""}
-								<button class="border border-[#ddd]" aria-label="espaço em branco">
-									<span>&nbsp</span>
-								</button>
-							{:else}
-								<button id={dia?.data}
-												class=" border-[#ddd]
+
+					<form method="POST" action="?/addEvent">
+						<input type="text" placeholder="Digite o nome do evento:" name="evento" />
+
+						<input name="dias" type="hidden" value={JSON.stringify(listaDiasSelecionadosEdicao)}>
+
+						<button>Salvar</button>
+					</form>
+				</div>
+			</div>
+		</Modal>
+
+		<div class="calendar-container">
+			{#each competencias as competencia}
+				<div class="b-0">
+					<div class="calendar">
+						<div class="month-indicator">{competencia?.mes}</div>
+						<div class="day-of-week">
+							<div>Dom</div>
+							<div>Seg</div>
+							<div>Ter</div>
+							<div>Qua</div>
+							<div>Qui</div>
+							<div>Sex</div>
+							<div>Sáb</div>
+						</div>
+						<div class="date-grid">
+							{#each competencia?.dias as dia}
+								{#if dia?.data === ""}
+									<button class="border border-[#ddd]" aria-label="espaço em branco">
+										<span>&nbsp</span>
+									</button>
+								{:else}
+									<button id={dia?.data}
+													class=" border-[#ddd]
 												{listaDiasSelecionadosEdicao.find(x => x === dia?.data) !== undefined ?
 												 'border border-red-400'
 												  : 'border'}"
-												onclick={() => handleClickDiaCalendario(dia?.data)}
-								>
-									<time datetime="{dia?.data}">{formatDate(dia?.data)}</time>
-								</button>
-							{/if}
-						{/each}
+													onclick={() => handleClickDiaCalendario(dia?.data)}
+									>
+										<time datetime="{dia?.data}">{formatDate(dia?.data)}</time>
+									</button>
+								{/if}
+							{/each}
+						</div>
 					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
+		</div>
 	</div>
-	<Footer sessaoAtual="Geral" trilhas={data.trilhas} />
+
+	<Footer sessaoAtual={getNomeTrilha()} trilhas={data.trilhas} />
 </div>
 
 <style>
     * {
-        cursor: default;
+        font-family: "Poppins", sans-serif;
     }
 
-		#page {
-				background-color: rgba(255, 255, 255, 1);
-				background-image: radial-gradient(rgba(0, 0, 0, 0.2) 0.9px, rgba(255, 255, 255, 1) 0.9px);
-				background-size: 18px 18px;
-		}
+    #page {
+        background-color: rgba(255, 255, 255, 1);
+        background-image: radial-gradient(rgba(0, 0, 0, 0.2) 0.9px, rgba(255, 255, 255, 1) 0.9px);
+        background-size: 18px 18px;
+    }
+
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        padding-top: 6em;
+    }
 
     .calendar-container {
         display: flex;
+        justify-content: space-evenly;
         gap: 3em;
         flex-wrap: wrap;
     }
