@@ -19,12 +19,21 @@ namespace Kermit.Controllers;
 [Route("v1/calendarios")]
 public class CalendarioController : ControllerBase
 {
+    private readonly ILogger<CalendarioController> _logger;
+
+    public CalendarioController(ILogger<CalendarioController> logger)
+    {
+        _logger = logger;
+    }
+
     [HttpGet]
     [Route("{id:guid?}")]
     public async Task<IActionResult> Get(
         [FromRoute] Guid? id,
         [FromServices] ICalendarioRepository calendarioRepository)
     {
+        _logger.LogInformation("{Time} | GET /v1/calendarios/{Identifier}", DateTime.Now.ToString("HH:mm:ss"), id);
+
         List<string> competenciasCalendario = id is null
             ? await calendarioRepository.FindAllCompetenciasCalendarioGeralAsync()
             : await calendarioRepository.FindAllCompetenciasByCalendarioIdAsync((Guid)id);
@@ -66,6 +75,8 @@ public class CalendarioController : ControllerBase
     [Route("info-cadastro")]
     public async Task<IActionResult> GetInfoCadastro([FromServices] ICalendarioRepository calendarioRepository)
     {
+        _logger.LogInformation("{Time} | GET /v1/calendarios/info-cadastro", DateTime.Now.ToString("HH:mm:ss"));
+        
         List<TrilhaResponse> calendariosComTrilhas = await calendarioRepository.FindAllCalendariosWithTrilhasAsync();
 
         var response = new { Trilhas = calendariosComTrilhas };
