@@ -3,7 +3,6 @@ using System.Globalization;
 using Kermit.Database;
 using Kermit.dto.calendario;
 using Kermit.Dto.ConteudoProgramatico;
-using Kermit.Dto.Edicao;
 using Kermit.Dto.Trillha;
 using Kermit.Models;
 using Kermit.Repositories;
@@ -65,23 +64,11 @@ public class CalendarioController : ControllerBase
 
     [HttpGet]
     [Route("info-cadastro")]
-    public async Task<IActionResult> GetInfoCadastro(
-        [FromServices] ITrilhaRepository trilhaRepository,
-        [FromServices] IEdicaoRepository edicaoRepository)
+    public async Task<IActionResult> GetInfoCadastro([FromServices] ICalendarioRepository calendarioRepository)
     {
-        Task<List<Trilha>> trilhasTask = trilhaRepository.FindAllAsync();
-        Task<List<Edicao>> edicoesTask = edicaoRepository.FindAllAsync();
+        List<TrilhaResponse> calendariosComTrilhas = await calendarioRepository.FindAllCalendariosWithTrilhasAsync();
 
-        await Task.WhenAll(trilhasTask, edicoesTask);
-
-        List<Trilha> trilhas = await trilhasTask;
-        List<Edicao> edicoes = await edicoesTask;
-
-        var response = new
-        {
-            Trilhas = trilhas.Select(t => new TrilhaResponse(t.Id.Valor, t.Nome.Value)),
-            Edicoes = edicoes.Select(e => new EdicaoResponse(e.Id.Valor, e.Nome.Value))
-        };
+        var response = new { Trilhas = calendariosComTrilhas };
 
         return Ok(response);
     }
@@ -182,7 +169,7 @@ public class CalendarioController : ControllerBase
         return NoContent();
     }
 
-    
+
     [HttpPost]
     [Route("{id:guid}/conteudo-programatico")]
     public async Task<IActionResult> CriarConteudoProgramatico(

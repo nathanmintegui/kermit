@@ -1,6 +1,7 @@
 using Dapper;
 
 using Kermit.Database;
+using Kermit.Dto.Trillha;
 using Kermit.Models;
 
 namespace Kermit.Repositories;
@@ -116,5 +117,25 @@ public class CalendarioRepository : ICalendarioRepository
     public Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoByCalendarioIdAsync(Guid id)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<List<TrilhaResponse>> FindAllCalendariosWithTrilhasAsync()
+    {
+        const string query = """
+                             select
+                                 c.id as calendario_id,
+                                 t.nome as trilha
+                             from calendarios c
+                             join trilhas_edicoes te on te.id = c.trilha_edicao_id
+                             join edicoes e on e.id = te.edicao_id
+                             join trilhas t on t.id = te.trilha_id
+                             where
+                                 e.em_andamento = true;
+                             """;
+
+        List<TrilhaResponse> calendarios =
+            (await _session.Connection.QueryAsync<TrilhaResponse>(query))?.ToList() ?? [];
+
+        return calendarios;
     }
 }

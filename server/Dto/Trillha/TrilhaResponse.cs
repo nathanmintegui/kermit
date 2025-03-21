@@ -1,3 +1,3 @@
 namespace Kermit.Dto.Trillha;
 
-public record TrilhaResponse(int Id, string Nome);
+public record TrilhaResponse(Guid CalendarioId, string Trilha);
