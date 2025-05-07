@@ -4,9 +4,11 @@
 
 	let { data, form }: PageProps = $props();
 
-	let trilhas = $state(data.trilhas.map(t => {
-		return { id: t.id, nome: t.nome, checked: false };
-	}));
+	let trilhas = $state(
+		data.trilhas.map((t) => {
+			return { id: t.id, nome: t.nome, checked: false };
+		})
+	);
 
 	interface MesCompetencia {
 		id: number;
@@ -16,14 +18,14 @@
 	}
 
 	interface Data {
-		mes: number,
-		ano: number
+		mes: number;
+		ano: number;
 	}
 
 	/*
-	* TODO: criar função que gera esse array de competências de acordo com o mês atual e projeta
-	*  12 meses a frente.
-	*  */
+	 * TODO: criar função que gera esse array de competências de acordo com o mês atual e projeta
+	 *  12 meses a frente.
+	 *  */
 	const competencias: MesCompetencia[] = [
 		{ id: 1, label: 'Janeiro', data: { ano: 2025, mes: 1 }, checked: false },
 		{ id: 2, label: 'Fevereiro', data: { ano: 2025, mes: 2 }, checked: false },
@@ -48,14 +50,16 @@
 	};
 </script>
 
-<div class="cursor-default border min-h-screen p-12 flex justify-center prevent-select poppins-regular">
+<div
+	class="prevent-select poppins-regular flex min-h-screen cursor-default justify-center border p-12"
+>
 	<form method="POST" use:enhance class="flex flex-col items-center">
 		{#if form?.error}
 			<p class="error">{form.error}</p>
 		{/if}
 
-		<h2 class="font-bold text-2xl my-3">Edição</h2>
-		<div class="flex gap-2 text-center mb-3">
+		<h2 class="my-3 text-2xl font-bold">Edição</h2>
+		<div class="mb-3 flex gap-2 text-center">
 			{#each data?.edicoes as edicao}
 				<label class="custom-radio w-24">
 					<input type="radio" name="edicao" value={edicao.nome} required />
@@ -64,31 +68,33 @@
 			{/each}
 		</div>
 
-		<h2 class="font-bold text-2xl my-3">Trilhas</h2>
-		<div class="flex gap-2 text-center mb-3">
+		<h2 class="my-3 text-2xl font-bold">Trilhas</h2>
+		<div class="mb-3 flex gap-2 text-center">
 			{#each trilhas as trilha}
 				<label class="custom-radio w-24">
 					<input type="checkbox" name="trilhas" value={trilha.nome} bind:checked={trilha.checked} />
 					<span class="radio-btn">{trilha.nome}</span>
 				</label>
 			{/each}
-			<button class="w-12 cursor-pointer"
-							onclick={adicionarNovaTrilha}>+
-			</button>
+			<button class="w-12 cursor-pointer" onclick={adicionarNovaTrilha}>+ </button>
 		</div>
 
-		{#if trilhas.find(t => t.checked)}
-			<h2 class="font-bold text-2xl my-3">Competências</h2>
-			<div class="flex gap-6 text-center mb-3">
+		{#if trilhas.find((t) => t.checked)}
+			<h2 class="my-3 text-2xl font-bold">Competências</h2>
+			<div class="mb-3 flex gap-6 text-center">
 				{#each trilhas as trilha}
 					{#if trilha.checked}
 						<div class="flex flex-col gap-3">
 							<p class="font-bold">{trilha.nome}</p>
-							<div class="grid grid-cols-2 gap-4 text-center mb-3 border rounded-sm p-4">
+							<div class="mb-3 grid grid-cols-2 gap-4 rounded-sm border p-4 text-center">
 								{#each competencias as competencia}
 									<label class="custom-radio">
-										<input type="checkbox" name={`competencias-${trilha.nome}`} value={JSON.stringify(competencia.data)}
-													 bind:checked={competencia.checked} />
+										<input
+											type="checkbox"
+											name={`competencias-${trilha.nome}`}
+											value={JSON.stringify(competencia.data)}
+											bind:checked={competencia.checked}
+										/>
 										<span class="radio-btn">{competencia.label}</span>
 									</label>
 								{/each}
@@ -99,30 +105,32 @@
 			</div>
 		{/if}
 
-		<button class="border rounded-sm p-3 bg-blue-300 cursor-pointer hover:opacity-85">Cadastrar</button>
+		<button class="cursor-pointer rounded-sm border bg-blue-300 p-3 hover:opacity-85"
+			>Cadastrar</button
+		>
 	</form>
 </div>
 
 <style>
-    .custom-radio input {
-        display: none;
-    }
+	.custom-radio input {
+		display: none;
+	}
 
-    .radio-btn {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        padding: 0.5em;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-    }
+	.radio-btn {
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+		padding: 0.5em;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		transition: background-color 0.2s;
+	}
 
-    .radio-btn:hover {
-        background-color: #f0f0f0;
-    }
+	.radio-btn:hover {
+		background-color: #f0f0f0;
+	}
 
-    .custom-radio input:checked + .radio-btn {
-        border: 2px solid #4CAF50;
-    }
+	.custom-radio input:checked + .radio-btn {
+		border: 2px solid #4caf50;
+	}
 </style>

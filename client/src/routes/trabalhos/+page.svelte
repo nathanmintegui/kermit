@@ -7,27 +7,30 @@
 	const trabalhos = data?.trabalhos;
 </script>
 
-<div id="page" class="flex flex-col items-center pt-12 min-h-[100%] prevent-select page-background">
+<div id="page" class="prevent-select page-background flex min-h-[100%] flex-col items-center pt-12">
 	<h1>Trabalhos</h1>
 
-	<div class="flex gap-12 flex-wrap w-screen justify-between px-12">
+	<div class="flex w-screen flex-wrap justify-between gap-12 px-12">
 		{#each trabalhos as trabalho}
-			<a href="/trabalhos/{trabalho.id}" class="border rounded-sm w-1/6 h-64 p-4 flex flex-col items-center
+			<a
+				href="/trabalhos/{trabalho.id}"
+				class="flex h-64 w-1/6 flex-col items-center rounded-sm border p-4
 			{!trabalho.emAndamento && 'bg-gray-100'}
-			{trabalho.emAndamento && 'hover:border-2 hover:border-blue-600 hover:cursor-pointer'}
-			">
+			{trabalho.emAndamento && 'hover:cursor-pointer hover:border-2 hover:border-blue-600'}
+			"
+			>
 				<p><strong>{trabalho.nome}</strong></p>
 				<p>Grupos: {trabalho.totalGrupos}</p>
 			</a>
 		{/each}
 	</div>
-	<Footer/>
+	<Footer />
 </div>
 
 <style>
-    #page {
-        background-color: rgba(255, 255, 255, 1);
-        background-image: radial-gradient(rgba(0, 0, 0, 0.2) 0.9px, rgba(255, 255, 255, 1) 0.9px);
-        background-size: 18px 18px;
-    }
+	#page {
+		background-color: rgba(255, 255, 255, 1);
+		background-image: radial-gradient(rgba(0, 0, 0, 0.2) 0.9px, rgba(255, 255, 255, 1) 0.9px);
+		background-size: 18px 18px;
+	}
 </style>
