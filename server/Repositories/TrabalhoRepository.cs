@@ -19,7 +19,7 @@ public class TrabalhoRepository : ITrabalhoRepository
 
     public async Task<Trabalho?> FindByIdAsync(Guid trabalhoId)
     {
-        Debug.Assert(trabalhoId != Guid.Empty, "ID do trabalho não pode ser vazio.");
+        Debug.Assert(trabalhoId != Guid.Empty);
 
         const string query = """
                              select t.*
@@ -39,7 +39,7 @@ public class TrabalhoRepository : ITrabalhoRepository
 
     public async Task<List<GrupoDto>> FindAllGruposByTrabalhoIdAsync(Guid trabalhoId)
     {
-        Debug.Assert(trabalhoId != Guid.Empty, "ID do trabalho não pode ser vazio.");
+        Debug.Assert(trabalhoId != Guid.Empty);
 
         const string query = """
                              select
@@ -68,7 +68,7 @@ public class TrabalhoRepository : ITrabalhoRepository
 
     public async Task<Trabalho?> FindByNomeAndTrilhaIdAsync(string nome, int trilhaId)
     {
-        Debug.Assert(!string.IsNullOrWhiteSpace(nome), "ID do trabalho não pode ser vazio.");
+        Debug.Assert(!string.IsNullOrWhiteSpace(nome));
 
         const string query = """
                              select t.*
@@ -90,7 +90,7 @@ public class TrabalhoRepository : ITrabalhoRepository
 
     public async Task SaveAsync(Trabalho trabalho)
     {
-        Debug.Assert(trabalho is not null, "Parâmetro trabalho não pode ser nulo.");
+        Debug.Assert(trabalho is not null);
 
         const string query = """
                              INSERT INTO trabalhos (nome, trilha_edicao_id, criado_em, finalizado_em)
@@ -99,7 +99,7 @@ public class TrabalhoRepository : ITrabalhoRepository
                              """;
 
         Guid id = await _session.Connection.ExecuteScalarAsync<Guid>(query, trabalho, _session.Transaction);
-        
+
         trabalho.Id = id;
     }
 }

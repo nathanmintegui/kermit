@@ -10,6 +10,8 @@ public class NomeEdicaoTypeHandler : SqlMapper.TypeHandler<NomeEdicao>
 {
     public override void SetValue(IDbDataParameter parameter, NomeEdicao? value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         parameter.Value = value.Value;
     }
 

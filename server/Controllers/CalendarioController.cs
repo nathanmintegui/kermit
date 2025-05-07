@@ -1,7 +1,7 @@
 using System.Globalization;
 
 using Kermit.Database;
-using Kermit.dto.calendario;
+using Kermit.Dto.Calendario;
 using Kermit.Dto.ConteudoProgramatico;
 using Kermit.Dto.Trillha;
 using Kermit.Models;
@@ -19,12 +19,6 @@ namespace Kermit.Controllers;
 [Route("v1/calendarios")]
 public class CalendarioController : ControllerBase
 {
-    private readonly ILogger<CalendarioController> _logger;
-
-    public CalendarioController(ILogger<CalendarioController> logger)
-    {
-        _logger = logger;
-    }
 
     [HttpGet]
     [Route("{id:guid?}")]
@@ -32,38 +26,30 @@ public class CalendarioController : ControllerBase
         [FromRoute] Guid? id,
         [FromServices] ICalendarioRepository calendarioRepository)
     {
-        _logger.LogInformation("{Time} | GET /v1/calendarios/{Identifier}", DateTime.Now.ToString("HH:mm:ss"), id);
-
         List<string> competenciasCalendario = id is null
             ? await calendarioRepository.FindAllCompetenciasCalendarioGeralAsync()
             : await calendarioRepository.FindAllCompetenciasByCalendarioIdAsync((Guid)id);
 
-        /*
-        List<ConteudoProgramatico> conteudosProgramaticos = id is null
-            ? await calendarioRepository.FindAllConteudoProgramaticoCalendarioGeralAsync()
-            : await calendarioRepository.FindAllConteudoProgramaticoByCalendarioIdAsync((Guid)id);
-        */
-
         List<Competencia> competencias = new(competenciasCalendario.Count);
         foreach (string compentecia in competenciasCalendario)
         {
-            int mes = int.Parse(compentecia.Split("/")[0]);
-            int ano = int.Parse(compentecia.Split("/")[1]);
+            int mes = int.Parse(compentecia.Split("/")[0], CultureInfo.InvariantCulture);
+            int ano = int.Parse(compentecia.Split("/")[1], CultureInfo.InvariantCulture);
 
-            HashSet<DiaCalendario> diasAntes = fillDaysBefore(ano, mes).ToHashSet();
+            HashSet<DiaCalendario> diasAntes = FillDaysBefore(ano, mes).ToHashSet();
             HashSet<DiaCalendario> dias = GetDates(ano, mes);
 
             diasAntes.UnionWith(dias);
 
             int diasRestantesFinalMes = ToInt32(Math.Ceiling(diasAntes.Count / 7.0) * 7) - diasAntes.Count;
-            diasAntes.UnionWith(preencherDiasDepois(diasRestantesFinalMes));
+            diasAntes.UnionWith(PreencherDiasDepois(diasRestantesFinalMes));
 
-            Competencia competenciaMesAtual = new() { Mes = getMes(mes), Dias = diasAntes };
+            Competencia competenciaMesAtual = new() { Mes = GetMes(mes), Dias = diasAntes };
 
             competencias.Add(competenciaMesAtual);
         }
 
-        /* TODO: fill out with specific content */
+        /* NOTE: fill out with specific content */
         Legenda legenda = new() { ItemsLegenda = [] };
 
         CalendarioResponse response = new() { Competencias = competencias, Legenda = legenda };
@@ -75,8 +61,6 @@ public class CalendarioController : ControllerBase
     [Route("info-cadastro")]
     public async Task<IActionResult> GetInfoCadastro([FromServices] ICalendarioRepository calendarioRepository)
     {
-        _logger.LogInformation("{Time} | GET /v1/calendarios/info-cadastro", DateTime.Now.ToString("HH:mm:ss"));
-        
         List<TrilhaResponse> calendariosComTrilhas = await calendarioRepository.FindAllCalendariosWithTrilhasAsync();
 
         var response = new { Trilhas = calendariosComTrilhas };
@@ -94,12 +78,12 @@ public class CalendarioController : ControllerBase
     {
         const int numeroMinimoTrilhas = 1;
 
-        if (request.edicao == string.Empty)
+        if (request.Edicao == string.Empty)
         {
             return BadRequest("Número da edição não pode ser vazio.");
         }
 
-        if (request.trilhas.Count < numeroMinimoTrilhas)
+        if (request.Trilhas.Count < numeroMinimoTrilhas)
         {
             return BadRequest("Lista de trilhas a serem cadastradas não deve ser vazia.");
         }
@@ -112,17 +96,17 @@ public class CalendarioController : ControllerBase
         List<Trilha> trilhas = await trilhasTask;
         List<Edicao> edicoes = await edicoesTask;
 
-        Edicao edicao = Edicao.Create(new NonEmptyString(request.edicao), true, edicoes);
+        Edicao edicao = Edicao.Create(new NonEmptyString(request.Edicao), true, edicoes);
 
         List<string> listaTrilhasCadastradas = trilhas
-            .Select(t => t.Nome.Value.Trim().ToUpper())
+            .Select(t => t.Nome.Value.Trim().ToUpper(new CultureInfo("pt")))
             .ToList();
 
         List<string> nomesTrilhasASeremCadastradas = trilhas.Count > 0
-            ? request.trilhas.Select(t => t.valor).AsEnumerable()
-                .Where(t => !listaTrilhasCadastradas.Contains(t.Trim().ToUpper()))
+            ? request.Trilhas.Select(t => t.Valor).AsEnumerable()
+                .Where(t => !listaTrilhasCadastradas.Contains(t.Trim().ToUpper(new CultureInfo("pt"))))
                 .ToList()
-            : request.trilhas.Select(t => t.valor).ToList();
+            : request.Trilhas.Select(t => t.Valor).ToList();
 
         List<Trilha> trilhasASeremCadastradas = nomesTrilhasASeremCadastradas
             .Select(t => Trilha.Create(new NonEmptyString(t)))
@@ -142,7 +126,7 @@ public class CalendarioController : ControllerBase
             }
 
             /*
-             * TODO: validar se já existe um calendário com a mesma edição ou se já existe um calendário ativo,
+             * NOTE: validar se já existe um calendário com a mesma edição ou se já existe um calendário ativo,
              * nesse caso setar o ativo para false.
              */
             Calendario calendario = Calendario.Create(edicao);
@@ -151,16 +135,16 @@ public class CalendarioController : ControllerBase
             trilhas.AddRange(trilhasASeremCadastradas);
 
             List<TrilhaCompetencia> trilhaCompetencias = [];
-            foreach (TrilhaCompetenciaRequest tcr in request.trilhas)
+            foreach (TrilhaCompetenciaRequest tcr in request.Trilhas)
             {
                 Trilha trilha = trilhas.Find(t =>
-                                    t.Nome.Value.Trim().Equals(tcr.valor.Trim(),
-                                        StringComparison.CurrentCultureIgnoreCase)) ??
-                                Trilha.Create(new NonEmptyString(tcr.valor));
+                                    t.Nome.Value.Trim().Equals(tcr.Valor.Trim(),
+                                        StringComparison.OrdinalIgnoreCase)) ??
+                                Trilha.Create(new NonEmptyString(tcr.Valor));
 
-                tcr.competencias.ForEach(c =>
+                tcr.Competencias.ForEach(c =>
                 {
-                    trilhaCompetencias.Add(TrilhaCompetencia.Create(new AnoMes(c.ano, c.mes), trilha, calendario));
+                    trilhaCompetencias.Add(TrilhaCompetencia.Create(new AnoMes(c.Ano, c.Mes), trilha, calendario));
                 });
             }
 
@@ -200,7 +184,7 @@ public class CalendarioController : ControllerBase
             return NotFound($"Calendário com ID {id} não encontrado.");
         }
 
-        if (!calendario.edicao.EmAndamento)
+        if (!calendario.Edicao.EmAndamento)
         {
             return Conflict("Calendário pertence à uma edição antiga/finalizada.");
         }
@@ -300,7 +284,7 @@ public class CalendarioController : ControllerBase
         return NoContent();
     }
 
-    private static List<DiaCalendario> fillDaysBefore(int year, int month)
+    private static List<DiaCalendario> FillDaysBefore(int year, int month)
     {
 #pragma warning disable S6562
         DateTime date = new(year, month, 1);
@@ -312,7 +296,7 @@ public class CalendarioController : ControllerBase
         {
             case DayOfWeek.Monday:
                 {
-                    DiaCalendario obj = new() { Data = date.ToString("dd/MM/yyyy") };
+                    DiaCalendario obj = new() { Data = date.ToString("dd/MM/yyyy", new CultureInfo("pt")) };
 
                     dates.Add(obj);
 
@@ -402,7 +386,8 @@ public class CalendarioController : ControllerBase
              date.Month == month;
              date = date.AddDays(1))
         {
-            DiaCalendario obj = new() { Data = date.ToString("dd/MM/yyyy") };
+            DiaCalendario obj = new() { Data = date.ToString("dd/MM/yyyy", new CultureInfo("pt")) };
+
 
             dates.Add(obj);
         }
@@ -410,7 +395,7 @@ public class CalendarioController : ControllerBase
         return dates;
     }
 
-    private static string getMes(int mes)
+    private static string GetMes(int mes)
     {
         return mes switch
         {
@@ -430,7 +415,7 @@ public class CalendarioController : ControllerBase
         };
     }
 
-    private static List<DiaCalendario> preencherDiasDepois(int diasRestantes)
+    private static List<DiaCalendario> PreencherDiasDepois(int diasRestantes)
     {
         List<DiaCalendario> dates = new(diasRestantes);
         for (int i = 0; i < diasRestantes; i++)

@@ -19,8 +19,8 @@ public sealed class Trabalho
 
     public static Trabalho Create(string nome, int trilhaEdicaoId)
     {
-        Debug.Assert(!string.IsNullOrWhiteSpace(nome), "Parâmetro nome não pode ser vazio.");
-        Debug.Assert(trilhaEdicaoId > 0, "Parâmetro trilhaEdicaoId deve ser um valor positivo.");
+        Debug.Assert(!string.IsNullOrWhiteSpace(nome));
+        Debug.Assert(trilhaEdicaoId > 0);
 
         Trabalho trabalho = new(Guid.Empty, nome, trilhaEdicaoId);
 

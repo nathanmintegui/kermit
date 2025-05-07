@@ -10,6 +10,8 @@ public class NomeTrilhaTypeHandler : SqlMapper.TypeHandler<NomeTrilha>
 {
     public override void SetValue(IDbDataParameter parameter, NomeTrilha? value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         parameter.Value = value.Value;
     }
 

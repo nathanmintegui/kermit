@@ -21,8 +21,8 @@ public class TrilhaCompetencia
 
     public static TrilhaCompetencia Create(AnoMes anoMes, Trilha trilha, Calendario calendario)
     {
-        Debug.Assert(trilha is not null, "Parâmetro trilha não pode ser nulo.");
-        Debug.Assert(calendario is not null, "Parâmetro calendario não pode ser nulo.");
+        Debug.Assert(trilha is not null);
+        Debug.Assert(calendario is not null);
 
         TrilhaCompetencia trilhaCompetencia = new(TrilhaComptenciaId.Empty, anoMes, trilha, calendario);
 
@@ -59,7 +59,7 @@ public sealed record AnoMes
             throw new ArgumentException("Mês deve ser maior que zero.");
         }
 
-        if (!isValorValido(ano, mes))
+        if (!IsValorValido(ano, mes))
         {
             throw new ArgumentException("Ano ou mês inválidos.");
         }
@@ -71,7 +71,7 @@ public sealed record AnoMes
      * Valida se o mês extraido do valor final esta entre 1 e 12 e
      * se o ano é igual ou superior ao ano atual.
      */
-    private bool isValorValido(int ano, int mes)
+    private static bool IsValorValido(int ano, int mes)
     {
         if (mes is < 1 or > 12)
         {
@@ -93,7 +93,7 @@ public sealed record AnoMes
      *      ano          mes
      * Ex.: 2025 * 100 + 06 = 202506
      */
-    private int CalcularAnoMes(int ano, int mes)
+    private static int CalcularAnoMes(int ano, int mes)
     {
         return (ano * 100) + mes;
     }

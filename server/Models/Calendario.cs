@@ -11,14 +11,14 @@ public sealed class Calendario
     private Calendario(CalendarioId id, Edicao edicao, DateTime criadoEm, DateTime alteradoEm)
     {
         Id = id;
-        this.edicao = edicao;
+        Edicao = edicao;
         CriadoEm = criadoEm;
         AlteradoEm = alteradoEm;
     }
 
     public static Calendario Create(Edicao edicao)
     {
-        Debug.Assert(edicao is not null, "Edição não pode ser nulo.");
+        Debug.Assert(edicao is not null);
 
         Calendario calendario = new(CalendarioId.Empty, edicao, DateTime.Now, DateTime.Now);
 
@@ -26,7 +26,7 @@ public sealed class Calendario
     }
 
     public CalendarioId Id { get; internal set; }
-    public Edicao edicao { get; private set; }
+    public Edicao Edicao { get; private set; }
     public DateTime CriadoEm { get; private set; }
     public DateTime AlteradoEm { get; private set; }
 }

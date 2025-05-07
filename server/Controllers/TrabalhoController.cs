@@ -123,7 +123,7 @@ public class TrabalhoController : ControllerBase
             if (request.IntegrantesPorGrupo is not null)
             {
                 /*
-                 * TODO: Handle this edge case when quantidade de alunos / integrante por grupos doesnt have an
+                 * NOTE: Handle this edge case when quantidade de alunos / integrante por grupos doesnt have an
                  * integer result, for example: 19/7 or 19/6.
                  */
                 if (listaIdAlunos.Count % request.IntegrantesPorGrupo != 0)
@@ -137,7 +137,7 @@ public class TrabalhoController : ControllerBase
             if (request.QuantidadeGrupos is not null)
             {
                 /*
-                 * TODO: Handle this edge case when quantidade de alunos / quantidade de grupos doesnt have an
+                 * NOTE: Handle this edge case when quantidade de alunos / quantidade de grupos doesnt have an
                  * integer result, for example: 19/7 or 19/6.
                  */
                 if (listaIdAlunos.Count % request.QuantidadeGrupos != 0)

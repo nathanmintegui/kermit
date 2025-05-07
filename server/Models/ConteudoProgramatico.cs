@@ -22,13 +22,13 @@ public sealed class ConteudoProgramatico
     public static ConteudoProgramatico Create(TrilhaCompetencia trilhaCompetencia, Evento evento, int dia,
         DateTime criadoEm, DateTime alteradoEm)
     {
-        Debug.Assert(trilhaCompetencia is not null, "Propriedade Triha Competencia não pode ser nulo.");
-        Debug.Assert(trilhaCompetencia.Id.Valor != 0, "Trilha competência não pode ter ID 0");
+        Debug.Assert(trilhaCompetencia is not null);
+        Debug.Assert(trilhaCompetencia.Id.Valor != 0);
 
-        Debug.Assert(evento is not null, "Propriedade Evento não pode ser nulo.");
-        Debug.Assert(evento.Id.Valor != 0, "Evento não pode ter ID 0");
+        Debug.Assert(evento is not null);
+        Debug.Assert(evento.Id.Valor != 0);
 
-        Debug.Assert(dia > 0, "Propriedade dia deve ser maior que zero.");
+        Debug.Assert(dia > 0);
 
         ConteudoProgramatico conteudoProgramatico = new(ConteudoProgramaticoId.Empty, trilhaCompetencia, evento, dia,
             DateTime.Now, DateTime.Now);
@@ -36,7 +36,7 @@ public sealed class ConteudoProgramatico
         return conteudoProgramatico;
     }
 
-    public ConteudoProgramaticoId Id { get; protected set; }
+    public ConteudoProgramaticoId Id { get; internal set; }
     public TrilhaCompetencia TrilhaCompetencia { get; private set; }
     public Evento Evento { get; private set; }
     public int Dia { get; private set; }

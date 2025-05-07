@@ -5,38 +5,25 @@ using Dapper;
 using Kermit.Database;
 using Kermit.Models;
 
-using Npgsql;
-
 namespace Kermit.Repositories;
 
 public class TrilhaRepository : ITrilhaRepository
 {
     private readonly DbSession _session;
-    private readonly ILogger<TrilhaRepository> _logger;
 
-    public TrilhaRepository(DbSession session, ILogger<TrilhaRepository> logger)
+    public TrilhaRepository(DbSession session)
     {
         _session = session;
-        _logger = logger;
     }
 
     public async Task<List<Trilha>> FindAllAsync()
     {
-        try
-        {
-            const string query = @"select id, nome from trilhas;";
+        const string query = @"select id, nome from trilhas;";
 
-            IEnumerable<Trilha> trilhas =
-                await _session.Connection.QueryAsync<Trilha>(query, null, _session.Transaction);
+        IEnumerable<Trilha> trilhas =
+            await _session.Connection.QueryAsync<Trilha>(query, null, _session.Transaction);
 
-            return trilhas.ToList();
-        }
-        catch (NpgsqlException e)
-        {
-            _logger.LogError("{Date} | An Exception occured - {Error}", DateTime.UtcNow, e);
-        }
-
-        return [];
+        return trilhas.ToList();
     }
 
     public async Task AddAsync(List<Trilha> trilhas)
@@ -72,7 +59,7 @@ public class TrilhaRepository : ITrilhaRepository
 
     public async Task<TrilhaEdicao?> FindTrilhaEdicaoByTrilhaIdAsync(int id)
     {
-        Debug.Assert(id > 0, "Trilha id não pode ser negativo.");
+        Debug.Assert(id > 0);
 
         const string query = """
                              select

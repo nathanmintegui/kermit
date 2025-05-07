@@ -24,7 +24,7 @@ public class CalendarioRepository : ICalendarioRepository
             """;
 
         Guid id = await _session.Connection.ExecuteScalarAsync<Guid>(query,
-            new { EdicaoId = calendario.edicao.Id.Valor, CriadoEm = DateTime.Now, AlteradoEm = DateTime.Now },
+            new { EdicaoId = calendario.Edicao.Id.Valor, CriadoEm = DateTime.Now, AlteradoEm = DateTime.Now },
             _session.Transaction);
 
         calendario.Id = CalendarioId.Create(id);
