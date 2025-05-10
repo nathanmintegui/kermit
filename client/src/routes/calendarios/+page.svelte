@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Footer from '$lib/components/footer/Footer.svelte';
 	import Modal from './components/Modal.svelte';
+	import Legenda from './components/Legenda.svelte';
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
 
@@ -70,48 +71,48 @@
 
 <div
 	id="page"
-	class="custom-cursor prevent-select min-h-[100%] text-center {mode === MODO.EDICAO.valor &&
-		MODO.EDICAO.estilo}"
+	class="custom-cursor prevent-select flex min-h-screen flex-col text-center {mode ===
+		MODO.EDICAO.valor && MODO.EDICAO.estilo}"
 >
-	<header class="border-b bg-white p-7">
-		<h1 class="text-3xl font-bold">Calendário {getNomeTrilha()}</h1>
+	<header class="border-b bg-white">
+		<h1 class="p-7 text-3xl font-bold">Calendário {getNomeTrilha()}</h1>
 	</header>
 
-	<div class="page-container">
-		{#if isAdmin}
-			<button onclick={handleClickEditarModoEdicao}>Editar</button>
-			<button onclick={() => (showModal = true)}> show modal</button>
-		{/if}
+	{#if isAdmin}
+		<button onclick={handleClickEditarModoEdicao}>Editar</button>
+		<button onclick={() => (showModal = true)}> show modal</button>
+	{/if}
 
-		<Modal bind:showModal>
-			{#snippet header()}
-				<h2>
-					modal
-					<small><em>adjective</em> mod·al \ˈmō-dəl\</small>
-				</h2>
-			{/snippet}
+	<Modal bind:showModal>
+		{#snippet header()}
+			<h2>
+				modal
+				<small><em>adjective</em> mod·al \ˈmō-dəl\</small>
+			</h2>
+		{/snippet}
 
-			<div class="main-content">
-				<div class="flex flex-col gap-5">
-					<p>Dias selecionados</p>
-					<div class="flex flex-col gap-3">
-						{#each listaDiasSelecionadosEdicao as dia}
-							<p>{dia}</p>
-						{/each}
-					</div>
-
-					<form method="POST" action="?/addEvent">
-						<input type="text" placeholder="Digite o nome do evento:" name="evento" />
-
-						<input name="dias" type="hidden" value={JSON.stringify(listaDiasSelecionadosEdicao)} />
-
-						<button>Salvar</button>
-					</form>
+		<div class="main-content">
+			<div class="flex flex-col gap-5">
+				<p>Dias selecionados</p>
+				<div class="flex flex-col gap-3">
+					{#each listaDiasSelecionadosEdicao as dia}
+						<p>{dia}</p>
+					{/each}
 				</div>
-			</div>
-		</Modal>
 
-		<div class="calendar-container">
+				<form method="POST" action="?/addEvent">
+					<input type="text" placeholder="Digite o nome do evento:" name="evento" />
+
+					<input name="dias" type="hidden" value={JSON.stringify(listaDiasSelecionadosEdicao)} />
+
+					<button>Salvar</button>
+				</form>
+			</div>
+		</div>
+	</Modal>
+
+	<div class="flex flex-1">
+		<div class="calendar-container border-2">
 			{#each competencias as competencia}
 				<div class="b-0">
 					<div class="calendar">
@@ -135,7 +136,9 @@
 									<button
 										id={dia?.data}
 										class=" border-[#ddd]
-												{listaDiasSelecionadosEdicao.find((x) => x === dia?.data) !== undefined
+                                                                        {listaDiasSelecionadosEdicao.find(
+											(x) => x === dia?.data
+										) !== undefined
 											? 'border border-red-400'
 											: 'border'}"
 										onclick={() => handleClickDiaCalendario(dia?.data)}
@@ -148,6 +151,9 @@
 					</div>
 				</div>
 			{/each}
+		</div>
+		<div class="flex flex-1 border">
+			<Legenda items={data?.calendario?.legenda?.itemsLegenda} />
 		</div>
 	</div>
 
@@ -169,17 +175,14 @@
 		background-size: 18px 18px;
 	}
 
-	.page-container {
-		display: flex;
-		flex-direction: column;
-		padding-top: 6em;
-	}
-
 	.calendar-container {
 		display: flex;
 		justify-content: space-evenly;
 		gap: 3em;
 		flex-wrap: wrap;
+		width: 70%;
+		overflow-y: scroll;
+		max-height: 500px;
 	}
 
 	.calendar {

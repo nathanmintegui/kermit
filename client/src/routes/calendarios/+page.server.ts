@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 
 	return {
 		calendario: data,
-		trilhas: trilhas.trilhas
+		trilhas: trilhas.trilhas,
 	};
 };
 
@@ -54,3 +54,4 @@ export const actions = {
 		return { success: true };
 	}
 } satisfies Action;
+
