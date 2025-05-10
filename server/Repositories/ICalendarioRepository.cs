@@ -14,7 +14,7 @@ public interface ICalendarioRepository
 
     Task<List<string>> FindAllCompetenciasCalendarioGeralAsync();
     Task<List<string>> FindAllCompetenciasByCalendarioIdAsync(Guid id);
-    Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoCalendarioGeralAsync();
-    Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoByCalendarioIdAsync(Guid id);
+    Task<List<ConteudoProgramaticoSnapshot>> FindAllConteudoProgramaticoCalendarioGeralAsync();
+    Task<List<ConteudoProgramaticoSnapshot>> FindAllConteudoProgramaticoByCalendarioIdAsync(Guid id);
     Task<List<TrilhaResponse>> FindAllCalendariosWithTrilhasAsync();
 }

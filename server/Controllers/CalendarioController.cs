@@ -19,7 +19,6 @@ namespace Kermit.Controllers;
 [Route("v1/calendarios")]
 public class CalendarioController : ControllerBase
 {
-
     [HttpGet]
     [Route("{id:guid?}")]
     public async Task<IActionResult> Get(
@@ -29,6 +28,10 @@ public class CalendarioController : ControllerBase
         List<string> competenciasCalendario = id is null
             ? await calendarioRepository.FindAllCompetenciasCalendarioGeralAsync()
             : await calendarioRepository.FindAllCompetenciasByCalendarioIdAsync((Guid)id);
+
+        List<ConteudoProgramaticoSnapshot> eventosCalendario = id is null
+            ? await calendarioRepository.FindAllConteudoProgramaticoCalendarioGeralAsync()
+            : await calendarioRepository.FindAllConteudoProgramaticoByCalendarioIdAsync((Guid)id);
 
         List<Competencia> competencias = new(competenciasCalendario.Count);
         foreach (string compentecia in competenciasCalendario)
@@ -49,8 +52,16 @@ public class CalendarioController : ControllerBase
             competencias.Add(competenciaMesAtual);
         }
 
-        /* NOTE: fill out with specific content */
-        Legenda legenda = new() { ItemsLegenda = [] };
+        List<ItemLegenda> itemsLegenda = eventosCalendario.Select(e =>
+        {
+            List<DateOnly> listaDatas = e.Datas.Select(DateOnly.FromDateTime).ToList();
+
+            ItemLegenda itemLegenda = new() { Id = e.Id, Cor = e.Cor, Nome = e.Nome, Datas = listaDatas };
+
+            return itemLegenda;
+        }).ToList();
+
+        Legenda legenda = new() { ItemsLegenda = itemsLegenda };
 
         CalendarioResponse response = new() { Competencias = competencias, Legenda = legenda };
 

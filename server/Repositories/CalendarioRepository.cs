@@ -1,8 +1,12 @@
+using System.Diagnostics;
+
 using Dapper;
 
 using Kermit.Database;
 using Kermit.Dto.Trillha;
 using Kermit.Models;
+
+using Npgsql;
 
 namespace Kermit.Repositories;
 
@@ -67,25 +71,16 @@ public class CalendarioRepository : ICalendarioRepository
     public async Task<List<string>> FindAllCompetenciasCalendarioGeralAsync()
     {
         const string query = """
-                             select
-                             	mc.mes || '/' || mc.ano as competencias
-                             from
-                                meses_calendario mc
-                             where
-                                mc.calendario_id = (
-                                    select
-                                        c.id
-                                    from 
-                                        calendarios c
-                                    join trilhas_edicoes te on te.id = c.trilha_edicao_id
-                                    join edicoes e on e.id = te.edicao_id
-                                    join trilhas t on t.id = te.trilha_id
-                                    where
-                                        e.em_andamento = true and
-                                        t.id = 1
-                                )
-                             order by
-                                mc.ano, mc.mes;
+                                select * from (
+                                    select distinct
+                                        to_char(cp."data", 'mm/yyyy') as mes_ano
+                                    from conteudo_programatico cp
+                                    join calendarios c on c.id = cp.calendario_id
+                                    join edicoes e on e.id = c.edicao_id
+                                    join trilhas t on t.id = c.trilha_id
+                                    where e.em_andamento = true and
+                                          t.id = 1
+                                ) order by mes_ano;
                              """;
 
         List<string> competencias = (await _session.Connection.QueryAsync<string>(query))?.ToList() ?? [];
@@ -96,11 +91,15 @@ public class CalendarioRepository : ICalendarioRepository
     public async Task<List<string>> FindAllCompetenciasByCalendarioIdAsync(Guid id)
     {
         const string query = """
-                             select
-                             	mc.mes || '/' || mc.ano as competencias
-                             from meses_calendario mc
-                             where mc.calendario_id = @Id
-                             order by mc.ano, mc.mes;
+                                select * from (
+                                    select distinct
+                                        to_char(cp."data", 'mm/yyyy') as mes_ano
+                                    from conteudo_programatico cp
+                                    join calendarios c on c.id = cp.calendario_id
+                                    join edicoes e on e.id = c.edicao_id
+                                    where cp.calendario_id = @Id and
+                                          e.em_andamento = true
+                                ) order by mes_ano;
                              """;
 
         List<string> competencias =
@@ -109,14 +108,114 @@ public class CalendarioRepository : ICalendarioRepository
         return competencias;
     }
 
-    public Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoCalendarioGeralAsync()
+    public async Task<List<ConteudoProgramaticoSnapshot>> FindAllConteudoProgramaticoCalendarioGeralAsync()
     {
-        throw new NotImplementedException();
+        try
+        {
+            const string query = """
+                                 select
+                                     e.id,
+                                     e.nome,
+                                     e.cor,
+                                     cp."data"
+                                 from conteudo_programatico cp
+                                 join eventos e on e.id = cp.id_evento
+                                 join calendarios c on c.id = cp.calendario_id
+                                 join edicoes e2 on e2.id = c.edicao_id
+                                 where e2.em_andamento = true and
+                                       c.trilha_id = 1 -- TRILHA GERAL
+                                 order by cp."data";
+                                 """;
+
+            List<ConteudoProgramaticoSnapshot> eventosSnapshot =
+                (await _session.Connection.QueryAsync<ConteudoProgramaticoSnapshot>(query)).ToList();
+
+            if (eventosSnapshot.Count == 0)
+            {
+                return [];
+            }
+
+            Debug.Assert(eventosSnapshot.Count > 0);
+
+            List<ConteudoProgramaticoSnapshot> response = new(eventosSnapshot.Count);
+
+            for (int idx = 0; idx < eventosSnapshot.Count; idx++)
+            {
+                ConteudoProgramaticoSnapshot? buffer = response.Find(e => e.Id == eventosSnapshot[idx].Id);
+                if (buffer is null)
+                {
+                    response.Add(eventosSnapshot[idx]);
+                    response[idx].Datas.Add(response[idx].Data);
+                    continue;
+                }
+
+                buffer.Datas.Add(eventosSnapshot[idx].Data);
+            }
+
+            Debug.Assert(response.Count > 0);
+
+            return response;
+        }
+        catch (NpgsqlException)
+        {
+            return [];
+        }
     }
 
-    public Task<List<ConteudoProgramatico>> FindAllConteudoProgramaticoByCalendarioIdAsync(Guid id)
+    public async Task<List<ConteudoProgramaticoSnapshot>> FindAllConteudoProgramaticoByCalendarioIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        Debug.Assert(id != Guid.Empty);
+
+        try
+        {
+            const string query = """
+                                 select
+                                     e.id,
+                                     e.nome,
+                                     e.cor,
+                                     cp."data"
+                                 from conteudo_programatico cp
+                                 join eventos e on e.id = cp.id_evento
+                                 join calendarios c on c.id = cp.calendario_id
+                                 join edicoes e2 on e2.id = c.edicao_id
+                                 where e2.em_andamento = true and
+                                       c.id = @Id
+                                 order by cp."data";
+                                 """;
+
+            List<ConteudoProgramaticoSnapshot> eventosSnapshot =
+                (await _session.Connection.QueryAsync<ConteudoProgramaticoSnapshot>(query, new { Id = id })).ToList();
+
+            if (eventosSnapshot.Count == 0)
+            {
+                return [];
+            }
+
+            Debug.Assert(eventosSnapshot.Count != 0);
+
+            List<ConteudoProgramaticoSnapshot> response = new(eventosSnapshot.Count);
+
+            for (int idx = 0; idx < eventosSnapshot.Count; idx++)
+            {
+                ConteudoProgramaticoSnapshot? buffer = response.Find(e => e.Id == eventosSnapshot[idx].Id);
+                if (buffer is null)
+                {
+                    response.Add(eventosSnapshot[idx]);
+                    response[idx].Datas.Add(response[idx].Data);
+                    continue;
+                }
+
+                buffer.Datas.Add(eventosSnapshot[idx].Data);
+            }
+
+            Debug.Assert(response.Count > 0);
+
+            return response;
+        }
+        catch (NpgsqlException)
+        {
+            return [];
+        }
     }
 
     public async Task<List<TrilhaResponse>> FindAllCalendariosWithTrilhasAsync()
@@ -126,9 +225,8 @@ public class CalendarioRepository : ICalendarioRepository
                                  c.id as calendario_id,
                                  t.nome as trilha
                              from calendarios c
-                             join trilhas_edicoes te on te.id = c.trilha_edicao_id
-                             join edicoes e on e.id = te.edicao_id
-                             join trilhas t on t.id = te.trilha_id
+                             join edicoes e on e.id = c.edicao_id
+                             join trilhas t on t.id = c.trilha_id
                              where
                                  e.em_andamento = true;
                              """;

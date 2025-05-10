@@ -19,12 +19,14 @@ public sealed class Legenda
 
 public sealed class ItemLegenda
 {
+    public required int Id { get; set; }
     public required string Cor { get; set; }
-    public required string Modulo { get; set; }
-    public required string Dias { get; set; }
+    public required string Nome { get; set; }
+    public required List<DateOnly> Datas { get; set; }
 }
 
 public class DiaCalendario
 {
     public string? Data { get; set; }
 }
+
