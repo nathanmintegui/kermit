@@ -1,4 +1,5 @@
 import type { Action, PageServerLoad } from './$types';
+import type { CalendarioResponse } from './types';
 
 const HOST = 'http://localhost:5201';
 let BASE_URI = `${HOST}/v1/calendarios`;
@@ -11,7 +12,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	}
 
 	const res = await fetch(BASE_URI);
-	const data = await res.json();
+	const data: CalendarioResponse = await res.json();
 
 	BASE_URI = `${HOST}/v1/calendarios`;
 	const response = await fetch(`${BASE_URI}/info-cadastro`);
@@ -22,7 +23,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 
 	return {
 		calendario: data,
-		trilhas: trilhas.trilhas,
+		trilhas: trilhas.trilhas
 	};
 };
 
@@ -54,4 +55,3 @@ export const actions = {
 		return { success: true };
 	}
 } satisfies Action;
-

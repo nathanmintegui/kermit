@@ -4,11 +4,14 @@
 	import Legenda from './components/Legenda.svelte';
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
+	import type { TItemLengenda } from './types';
+
+	const EMPTY_STRING = '' as const;
 
 	const MODO = {
 		VISUALIZACAO: {
 			valor: 'VISUALIZACAO',
-			estilo: ''
+			estilo: EMPTY_STRING
 		},
 		EDICAO: {
 			valor: 'EDICAO',
@@ -66,6 +69,25 @@
 		const nomeTrilha = data.trilhas.find((d) => d.calendarioId === param);
 
 		return nomeTrilha !== null ? nomeTrilha?.trilha : 'Geral';
+	};
+
+	/**
+	 * Retorna cor relativa ao evento pela data forncecida.
+	 * @param {Date} data
+	 * @returns {string} cor do evento em hexadecimal
+	 */
+	const getCorEventoByData = (data: string, legenda: Array<TItemLengenda>): string => {
+		console.assert(
+			data !== undefined && data !== null,
+			'Parâmetro data não pode ser nulo ou undefined.'
+		);
+		console.assert(
+			legenda !== undefined && legenda !== null,
+			'Parâmetro legenda não pode ser nulo ou undefined.'
+		);
+		console.assert(legenda.length > 0, 'Parâmetro legenda não pode ser vazio.');
+
+		return legenda.find((item: TItemLengenda) => item.datas.includes(data))?.cor ?? EMPTY_STRING;
 	};
 </script>
 
@@ -128,13 +150,17 @@
 						</div>
 						<div class="date-grid">
 							{#each competencia?.dias as dia}
-								{#if dia?.data === ''}
+								{#if dia?.data === EMPTY_STRING}
 									<button class="border border-[#ddd]" aria-label="espaço em branco">
 										<span>&nbsp</span>
 									</button>
 								{:else}
 									<button
 										id={dia?.data}
+										style="background-color: {getCorEventoByData(
+											dia.data,
+											data.calendario.legenda.itemsLegenda as Array<TItemLengenda>
+										)}"
 										class=" border-[#ddd]
                                                                         {listaDiasSelecionadosEdicao.find(
 											(x) => x === dia?.data

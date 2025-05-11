@@ -22,7 +22,7 @@ public sealed class ItemLegenda
     public required int Id { get; set; }
     public required string Cor { get; set; }
     public required string Nome { get; set; }
-    public required List<DateOnly> Datas { get; set; }
+    public required List<string> Datas { get; set; }
 }
 
 public class DiaCalendario

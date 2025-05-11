@@ -54,7 +54,7 @@ public class CalendarioController : ControllerBase
 
         List<ItemLegenda> itemsLegenda = eventosCalendario.Select(e =>
         {
-            List<DateOnly> listaDatas = e.Datas.Select(DateOnly.FromDateTime).ToList();
+            List<string> listaDatas = e.Datas.Select(e => e.ToString("dd/MM/yyyy", new CultureInfo("pt"))).ToList();
 
             ItemLegenda itemLegenda = new() { Id = e.Id, Cor = e.Cor, Nome = e.Nome, Datas = listaDatas };
 

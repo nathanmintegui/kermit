@@ -17,7 +17,7 @@
 	<p class="border-b bg-black text-white">Módulo</p>
 	{#each items as item (item.id)}
 		<div class="flex border-b">
-			<span class="w-[15%] bg-[#FF0000]">-</span>
+			<span style="background-color: {item.cor};" class="w-[15%]">-</span>
 			<p class="w-[85%] pl-4 text-start">{item.nome}</p>
 		</div>
 	{/each}

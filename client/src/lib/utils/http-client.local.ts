@@ -1,8 +1,4 @@
-export const mockRequest = async <T>(
-	data: T,
-	options: ResponseInit,
-	sleep = 200
-): Promise<T> => {
+export const mockRequest = async <T>(data: T, options: ResponseInit, sleep = 200): Promise<T> => {
 	const response = new Response(JSON.stringify(data), options);
 
 	return new Promise((resolve, reject) => {
@@ -16,4 +12,3 @@ export const mockRequest = async <T>(
 		}, sleep);
 	});
 };
-
