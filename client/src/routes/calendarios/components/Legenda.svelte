@@ -7,7 +7,7 @@
 		id: number;
 		nome: string;
 		cor: string;
-		dias: Array<Date>;
+		datas: Array<Date>;
 	}
 
 	let { items }: IProps = $props();
@@ -18,7 +18,8 @@
 	{#each items as item (item.id)}
 		<div class="flex border-b">
 			<span style="background-color: {item.cor};" class="w-[15%]">-</span>
-			<p class="w-[85%] pl-4 text-start">{item.nome}</p>
+			<p class="w-[70%] pl-4 text-start">{item.nome}</p>
+			<p class="w-[15%] border-l text-center">{item.datas.length}</p>
 		</div>
 	{/each}
 </div>
