@@ -1,8 +1,19 @@
-import type { PageLoad } from '../../../../.svelte-kit/types/src/routes';
 import { mockRequest } from '$lib/utils/http-client.local';
+import type { PageServerLoad } from './$types';
 
-export const load: PageLoad = async ({ fetch, params }) => {
-	const response = await mockRequest(
+type TTrabalhosResponse = {
+	data: Array<TTrabalho>;
+}
+
+type TTrabalho = {
+	id: number;
+	nome: string;
+	emAndamento: boolean;
+	totalGrupos: number;
+}
+
+export const load: PageServerLoad = async () => {
+	const response = await mockRequest<TTrabalhosResponse>(
 		{
 			data: [
 				{ id: 1, nome: 'Trabalho 1', emAndamento: false, totalGrupos: 6 },
@@ -14,9 +25,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		{ status: 200 }
 	);
 
-	const trabalhos = await response.json();
-
 	return {
-		trabalhos: trabalhos.data
+		trabalhos: response.data
 	};
 };
